@@ -1,0 +1,164 @@
+# =========================
+# OS 系统文件
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+
+# =========================
+# IDE / 编辑器
+# =========================
+.idea/
+.vscode/
+*.iml
+
+# IntelliJ IDEA
+out/
+*.ipr
+*.iws
+
+# DataGrip
+.idea/dataSources/
+.idea/dataSources.local.xml
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# VS Code 本地配置，可按需保留
+.history/
+
+
+# =========================
+# Java / Spring Boot
+# =========================
+target/
+build/
+.gradle/
+.mvn/wrapper/maven-wrapper.jar
+
+# 编译文件
+*.class
+*.jar
+*.war
+*.ear
+
+# 日志
+logs/
+*.log
+
+
+# =========================
+# Maven / Gradle 本地文件
+# =========================
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties
+
+# Gradle
+gradle-app.setting
+!gradle-wrapper.jar
+
+
+# =========================
+# Node / Vue 3
+# =========================
+node_modules/
+dist/
+dist-ssr/
+.vite/
+.cache/
+.temp/
+coverage/
+
+# npm / pnpm / yarn 日志
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# =========================
+# 前端环境变量
+# =========================
+.env
+.env.local
+.env.*.local
+
+# 可以提交示例环境变量文件
+!.env.example
+
+
+# =========================
+# 后端环境变量 / 本地配置
+# =========================
+application-local.yml
+application-local.yaml
+application-dev-local.yml
+application-dev-local.yaml
+
+*.env
+
+
+# =========================
+# 上传文件 / 本地静态资源
+# =========================
+uploads/
+upload/
+files/
+storage/
+tmp/
+temp/
+
+
+# =========================
+# Docker 本地数据
+# =========================
+docker/mysql/data/
+docker/redis/data/
+docker/nginx/logs/
+docker/minio/data/
+
+
+# =========================
+# 数据库导出临时文件
+# =========================
+*.dump
+*.bak
+*.sql.bak
+
+
+# =========================
+# 测试报告 / 覆盖率
+# =========================
+coverage/
+test-output/
+surefire-reports/
+
+
+# =========================
+# Python 临时文件
+# 如果后面写爬虫或脚本会用到
+# =========================
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+
+# =========================
+# 压缩包 / 临时归档
+# =========================
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+
+
+# =========================
+# 本地说明文件
+# =========================
+TODO.local.md
+notes.local.md
