@@ -1,0 +1,9 @@
+nf:
+  db:
+    host: 192.168.100.146
+    port: 3306
+    password: 123456
+
+k4:
+  security:
+    password: 123456

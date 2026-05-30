@@ -1,0 +1,50 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: nep-service
+  profiles:
+    active: dev
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${nf.db.host}:${nf.db.port}/nep_forge?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
+    username: root
+    password: ${nf.db.password}
+
+logging:
+  level:
+    com.nep: debug
+  pattern:
+    dateformat: HH:mm:ss:SSS
+  file:
+    path: logs/${spring.application.name}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    enabled: false # 关闭原生的 Swagger UI
+    tags-sorter: order # 接口和标签安扎自定义排序规则 (配置 Knife4j 增强注解使用)
+    operations-sorter: order
+  packages-to-scan: com.nep.controller # Knife4j 配置 Controller 所在包路径
+
+knife4j:
+  enable: true # 开启 Knife4j 增强特性
+  setting:
+    language: zh-cn # 设置 UI 为中文
+    enable-swagger-models: true # 再页面底部开启实体类数据字典
+    swagger-model-name: 实体模型 # 数据字典的名字
+    enable-dynamic-parameter: true # 启用动态参数
+  # 访问密码保护
+  basic:
+    enable: false
+    username: admin
+    password: ${k4.security.password}
+
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true # 驼峰命名
