@@ -11,7 +11,7 @@ import com.nep.constants.MessageConstant;
  */
 @RequiredArgsConstructor
 @Getter
-public enum AriticalErrorCode implements BaseErrorInfo {
+public enum ArticleErrorCode implements BaseErrorInfo {
     ARTICLE_NOT_FOUND(40500, 404, MessageConstant.ARTICLE_NOT_FOUND),
     ARTICLE_NOT_PUBLISHED(40501, 403, MessageConstant.ARTICLE_NOT_PUBLISHED),
     TAG_NOT_FOUND(40502, 404, MessageConstant.TAG_NOT_FOUND);
