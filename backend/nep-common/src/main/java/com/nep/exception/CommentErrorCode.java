@@ -2,6 +2,7 @@ package com.nep.exception;
 
 import lombok.RequiredArgsConstructor;
 import lombok.Getter;
+import com.nep.constants.MessageConstant;
 
 /**
  * 评论错误码
@@ -11,8 +12,8 @@ import lombok.Getter;
 @RequiredArgsConstructor
 @Getter
 public enum CommentErrorCode implements BaseErrorInfo {
-    COMMENT_NOT_FOUND(40600, 404, "评论不存在"),
-    COMMENT_DISABLED(40601, 403, "评论已被禁用");
+    COMMENT_NOT_FOUND(40600, 404, MessageConstant.COMMENT_NOT_FOUND),
+    COMMENT_DISABLED(40601, 403, MessageConstant.COMMENT_DISABLED);
 
     private final Integer code;
     private final Integer httpStatus;

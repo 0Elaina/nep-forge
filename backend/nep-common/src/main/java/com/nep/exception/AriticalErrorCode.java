@@ -2,6 +2,7 @@ package com.nep.exception;
 
 import lombok.RequiredArgsConstructor;
 import lombok.Getter;
+import com.nep.constants.MessageConstant;
 
 /**
  * 文章错误码
@@ -11,9 +12,9 @@ import lombok.Getter;
 @RequiredArgsConstructor
 @Getter
 public enum AriticalErrorCode implements BaseErrorInfo {
-    ARTICLE_NOT_FOUND(40500, 404, "文章不存在"),
-    ARTICLE_NOT_PUBLISHED(40501, 403, "文章未发布或已下架"),
-    TAG_NOT_FOUND(40502, 404, "标签不存在");
+    ARTICLE_NOT_FOUND(40500, 404, MessageConstant.ARTICLE_NOT_FOUND),
+    ARTICLE_NOT_PUBLISHED(40501, 403, MessageConstant.ARTICLE_NOT_PUBLISHED),
+    TAG_NOT_FOUND(40502, 404, MessageConstant.TAG_NOT_FOUND);
 
     private final Integer code;
     private final Integer httpStatus;

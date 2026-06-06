@@ -3,6 +3,7 @@ package com.nep.result;
 import lombok.Data;
 
 import java.io.Serializable;
+import com.nep.constants.MessageConstant;
 
 /**
  * API 响应实体
@@ -25,7 +26,7 @@ public class ApiResponse<T> implements Serializable {
     public static <T> ApiResponse<T> success(T data) {
         ApiResponse<T> response = new ApiResponse<>();
         response.setCode(0);
-        response.setMessage("success");
+        response.setMessage(MessageConstant.SUCCESS);
         response.setData(data);
         response.setTraceId(null);
         return response;
@@ -40,7 +41,7 @@ public class ApiResponse<T> implements Serializable {
     public static <T> ApiResponse<T> success(T data, String traceId) {
         ApiResponse<T> response = new ApiResponse<>();
         response.setCode(0);
-        response.setMessage("success");
+        response.setMessage(MessageConstant.SUCCESS);
         response.setData(data);
         response.setTraceId(traceId);
         return response;

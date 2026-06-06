@@ -1,0 +1,80 @@
+package com.nep.constants;
+
+/**
+ * 消息提示常量类
+ * <p>
+ * 集中管理项目中所有业务提示消息、错误提示信息及日志消息，
+ * 便于统一维护和修改，避免字符串硬编码散落在各处。
+ *
+ * @author Neptune
+ * @date 2026-06-06
+ */
+public final class MessageConstant {
+    private MessageConstant() {}
+
+    /* ===================== 通用 ===================== */
+
+    public static final String SUCCESS = "成功";
+    public static final String REQUEST_PARAM_ERROR = "请求参数错误";
+    public static final String UNAUTHORIZED = "未登录或登录已过期";
+    public static final String FORBIDDEN = "无权限访问";
+    public static final String NOT_FOUND = "资源不存在";
+    public static final String CONFLICT = "数据冲突";
+    public static final String TOO_MANY_REQUESTS = "请求过于频繁";
+    public static final String SYSTEM_ERROR = "系统内部错误";
+
+    /* ===================== 用户模块 ===================== */
+
+    public static final String USERNAME_OR_PASSWORD_ERROR = "用户名或密码错误";
+    public static final String USER_DISABLED = "用户已被删除或不可用";
+    public static final String USERNAME_EXISTS = "用户名已存在";
+    public static final String EMAIL_EXISTS = "邮箱已存在";
+
+    /* ===================== 装机单模块 ===================== */
+
+    public static final String BUILD_NOT_FOUND = "装机单不存在";
+    public static final String BUILD_FORBIDDEN = "无权访问该装机单";
+    public static final String BUILD_HARDWARE_EXISTS = "装机单中已存在该配件";
+
+    /* ===================== 配件模块 ===================== */
+
+    public static final String HARDWARE_NOT_FOUND = "配件不存在";
+    public static final String HARDWARE_CATEGORY_NOT_FOUND = "配件分类不存在";
+
+    /* ===================== 文章模块 ===================== */
+
+    public static final String ARTICLE_NOT_FOUND = "文章不存在";
+    public static final String ARTICLE_NOT_PUBLISHED = "文章未发布或已下架";
+    public static final String TAG_NOT_FOUND = "标签不存在";
+
+    /* ===================== 交互模块（点赞/收藏） ===================== */
+
+    public static final String FAVORITE_FOLDER_NOT_FOUND = "收藏夹不存在";
+    public static final String ALREADY_LIKED = "已点赞，请勿重复操作";
+    public static final String ALREADY_FAVORITED = "已收藏，请勿重复操作";
+
+    /* ===================== 评论模块 ===================== */
+
+    public static final String COMMENT_NOT_FOUND = "评论不存在";
+    public static final String COMMENT_DISABLED = "评论已被禁用";
+
+    /* ===================== API 响应 ===================== */
+
+    public static final String API_SUCCESS = "success";
+
+    /* ===================== 参数校验 & 异常处理 ===================== */
+
+    public static final String MISSING_REQUEST_PARAM = "缺少请求参数";
+    public static final String REQUEST_BODY_INVALID = "请求体格式错误，请检查 JSON 格式";
+    public static final String METHOD_NOT_SUPPORTED = "请求方法不支持";
+    public static final String DATA_CONSTRAINT_VIOLATION = "数据已存在或违反唯一约束";
+    public static final String UNKNOWN_EXCEPTION_LOG = "系统发生未知异常";
+
+    /* ===================== 文档配置 ===================== */
+
+    public static final String API_DOC_TITLE = "NepForge 接口文档";
+    public static final String API_DOC_VERSION = "v0.0.1";
+    public static final String API_DOC_DESCRIPTION = "NepForge 项目测试接口文档";
+    public static final String API_DOC_CONTACT_NAME = "Neptune";
+
+}
