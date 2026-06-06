@@ -15,7 +15,8 @@ spring:
 
 logging:
   level:
-    com.nep: debug
+    com:
+      nep: debug
   pattern:
     dateformat: HH:mm:ss:SSS
   file:
@@ -27,7 +28,7 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: false # 关闭原生的 Swagger UI
-    tags-sorter: order # 接口和标签安扎自定义排序规则 (配置 Knife4j 增强注解使用)
+    tags-sorter: order # 接口和标签按照自定义排序规则 (配置 Knife4j 增强注解使用)
     operations-sorter: order
   packages-to-scan: com.nep.controller # Knife4j 配置 Controller 所在包路径
 

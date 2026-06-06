@@ -2,6 +2,7 @@ package com.nep.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import com.nep.constants.MessageConstant;
 
 /**
  * 配件错误码
@@ -11,8 +12,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum HardwareErrorCode implements BaseErrorInfo {
-    HARDWARE_NOT_FOUND(40200, 404, "配件不存在"),
-    HARDWARE_CATEGORY_NOT_FOUND(40201, 404, "配件分类不存在");
+    HARDWARE_NOT_FOUND(40200, 404, MessageConstant.HARDWARE_NOT_FOUND),
+    HARDWARE_CATEGORY_NOT_FOUND(40201, 404, MessageConstant.HARDWARE_CATEGORY_NOT_FOUND);
 
     private final Integer code;
     private final Integer httpStatus;

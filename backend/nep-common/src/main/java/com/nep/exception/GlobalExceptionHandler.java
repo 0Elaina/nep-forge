@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.UUID;
 import com.nep.result.ApiResponse;
+import com.nep.constants.MessageConstant;
 import java.util.stream.Collectors;
 import org.springframework.validation.BindException;
 import jakarta.validation.ConstraintViolationException;
@@ -126,7 +127,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ApiResponse<Void>> handleMissingServletRequestParameterException(MissingServletRequestParameterException ex) {
-        String message = "缺少请求参数: " + ex.getParameterName();
+        String message = MessageConstant.MISSING_REQUEST_PARAM + ": " + ex.getParameterName();
         return fail(CommonErrorCode.REQUEST_PARAM_ERROR, message);
     }
 
@@ -140,7 +141,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
-        return fail(CommonErrorCode.REQUEST_PARAM_ERROR, "请求体格式错误，请检查 JSON 格式");
+        return fail(CommonErrorCode.REQUEST_PARAM_ERROR, MessageConstant.REQUEST_BODY_INVALID);
     }
 
     /**
@@ -154,7 +155,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleHttpRequestMethodNotSupportedException(
             HttpRequestMethodNotSupportedException ex
     ) {
-        return fail(CommonErrorCode.REQUEST_PARAM_ERROR, "请求方法不支持: " + ex.getMethod());
+        return fail(CommonErrorCode.REQUEST_PARAM_ERROR, MessageConstant.METHOD_NOT_SUPPORTED + ": " + ex.getMethod());
     }
 
     /**
@@ -182,7 +183,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolationException(
             DataIntegrityViolationException ex
     ) {
-        return fail(CommonErrorCode.CONFLICT, "数据已存在或违反唯一约束");
+        return fail(CommonErrorCode.CONFLICT, MessageConstant.DATA_CONSTRAINT_VIOLATION);
     }
 
     /**
@@ -195,7 +196,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleException(Exception ex) {
-        log.error("系统发生未知异常: {}", ex);
+        log.error(MessageConstant.UNKNOWN_EXCEPTION_LOG + ": {}", ex);
 
         return fail(CommonErrorCode.SYSTEM_ERROR, CommonErrorCode.SYSTEM_ERROR.getMessage());
     }
