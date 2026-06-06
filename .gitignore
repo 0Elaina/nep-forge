@@ -95,6 +95,8 @@ pnpm-debug.log*
 # =========================
 application-local.yml
 application-local.yaml
+application-dev.yml
+application-dev.yaml
 application-dev-local.yml
 application-dev-local.yaml
 
