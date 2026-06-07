@@ -129,10 +129,12 @@ erDiagram
 
 | 字段 | 值 | 含义 |
 |---|---:|---|
+| `users.status` | 0 | 禁用 |
+| `users.status` | 1 | 正常 |
 | `users.is_deleted` | 0 | 未删除 |
 | `users.is_deleted` | 1 | 已删除 |
 
-当前 `schema.sql` 中 `users` 表未单独设置用户禁用状态字段，仅通过软删除表示用户是否删除。
+`users.status` 用于控制用户是否可登录，独立于 `is_deleted` 软删除标记。被禁用用户无法登录但数据保留；被删除用户标记 `is_deleted = 1`。
 
 ### 5.2 角色编码
 
@@ -201,7 +203,11 @@ erDiagram
 | `username` | `varchar(50)` | NOT NULL, UNIQUE | - | 用户名 |
 | `password_hash` | `varchar(255)` | NOT NULL | - | 加密后的密码 |
 | `email` | `varchar(100)` | NOT NULL, UNIQUE | - | 邮箱 |
+| `nickname` | `varchar(50)` | NULL | `null` | 昵称 |
+| `bio` | `varchar(255)` | NULL | `null` | 简介 |
 | `avatar` | `varchar(512)` | NULL | `null` | 头像 URL |
+| `status` | `tinyint unsigned` | NOT NULL | `1` | 用户状态，0 禁用，1 正常 |
+| `last_login_time` | `datetime` | NULL | `null` | 最后登录时间 |
 | `create_time` | `datetime` | NOT NULL | - | 创建时间 |
 | `update_time` | `datetime` | NOT NULL | - | 更新时间 |
 | `is_deleted` | `tinyint(1)` | NOT NULL | `0` | 是否删除 |
@@ -267,7 +273,6 @@ erDiagram
 | `role_id` | `int unsigned` | NOT NULL | - | 角色 id |
 | `create_time` | `datetime` | NOT NULL | - | 创建时间 |
 | `update_time` | `datetime` | NOT NULL | - | 更新时间 |
-| `is_deleted` | `tinyint(1)` | NOT NULL | `0` | 是否删除 |
 
 ### 索引设计
 
@@ -294,9 +299,10 @@ erDiagram
 | `name` | `varchar(50)` | NOT NULL | - | 收藏夹名称 |
 | `description` | `varchar(255)` | NULL | `null` | 收藏夹描述 |
 | `is_public` | `tinyint(1)` | NOT NULL | `0` | 是否公开，0 私密，1 公开 |
-| `create_time` | `datetime` | NOT NULL | - | 创建时间 |
-| `update_time` | `datetime` | NOT NULL | - | 更新时间 |
-| `is_deleted` | `tinyint(1)` | NOT NULL | `0` | 是否删除 |
+| `create_time` | `datetime` | NOT NULL | - | 收藏夹创建时间 |
+| `update_time` | `datetime` | NOT NULL | - | 收藏夹更新时间 |
+
+> 说明：当前 `favorites` 表未设计 `is_deleted` 软删除字段。删除收藏夹为物理删除，同时由后端清理 `user_interaction` 中关联的收藏记录。
 
 ### 索引设计
 
@@ -304,7 +310,7 @@ erDiagram
 |---|---|---|---|
 | `PRIMARY` | `id` | 主键 | 收藏夹唯一标识 |
 | `idx_user_id` | `user_id` | 普通索引 | 加速查询用户收藏夹 |
-| `uk_user_folder_name` | `user_id`, `name`, `is_deleted` | 唯一索引 | 同一用户下未删除状态的收藏夹名称不可重复 |
+| `uk_user_folder_name` | `user_id`, `name` | 唯一索引 | 同一用户下收藏夹名称不可重复 |
 
 ---
 
@@ -326,7 +332,6 @@ erDiagram
 | `folder_id` | `bigint unsigned` | NOT NULL | `0` | 收藏夹 id，收藏行为时填写 |
 | `create_time` | `datetime` | NOT NULL | - | 创建时间 |
 | `update_time` | `datetime` | NOT NULL | - | 更新时间 |
-| `is_deleted` | `tinyint(1)` | NOT NULL | `0` | 是否删除 |
 
 ### 索引设计
 
@@ -506,14 +511,13 @@ CPU 示例：
 | `quantity` | `int unsigned` | NOT NULL | `1` | 配件数量 |
 | `create_time` | `datetime` | NOT NULL | - | 创建时间 |
 | `update_time` | `datetime` | NOT NULL | - | 更新时间 |
-| `is_deleted` | `tinyint(1)` | NOT NULL | `0` | 是否删除 |
 
 ### 索引设计
 
 | 索引名 | 字段 | 类型 | 说明 |
 |---|---|---|---|
 | `PRIMARY` | `id` | 主键 | 装机单详情唯一标识 |
-| `uk_build_hardware_deleted` | `build_id`, `hardware_id`, `is_deleted` | 唯一索引 | 同一装机单内同一配件在同一删除状态下只能出现一次 |
+| `uk_build_hardware` | `build_id`, `hardware_id` | 唯一索引 | 同一装机单内同一配件只能出现一次 |
 | `idx_build_id` | `build_id` | 普通索引 | 查询装机单下的配件明细 |
 
 ---
@@ -619,7 +623,6 @@ CPU 示例：
 | `tag_id` | `int unsigned` | NOT NULL | - | 标签 id |
 | `create_time` | `datetime` | NOT NULL | - | 创建时间 |
 | `update_time` | `datetime` | NOT NULL | - | 更新时间 |
-| `is_deleted` | `tinyint(1)` | NOT NULL | `0` | 是否删除 |
 
 ### 索引设计
 
@@ -646,6 +649,7 @@ CPU 示例：
 | `article_id` | `bigint unsigned` | NOT NULL | - | 文章 id |
 | `user_id` | `bigint unsigned` | NOT NULL | - | 用户 id |
 | `content` | `text` | NOT NULL | - | 评论内容 |
+| `root_id` | `bigint unsigned` | NOT NULL | `0` | 顶级评论 id，0 表示本身是主评论，非 0 表示所属的主楼层 id |
 | `parent_id` | `bigint unsigned` | NOT NULL | `0` | 父级评论 id，0 表示直接评论文章 |
 | `like_count` | `int unsigned` | NOT NULL | `0` | 点赞量 |
 | `reply_to_user_id` | `bigint unsigned` | NULL | `null` | 回复的评论用户 id |
@@ -659,7 +663,8 @@ CPU 示例：
 | 索引名 | 字段 | 类型 | 说明 |
 |---|---|---|---|
 | `PRIMARY` | `id` | 主键 | 评论唯一标识 |
-| `idx_article_parent_deleted` | `article_id`, `parent_id`, `is_deleted` | 普通联合索引 | 查询文章评论列表与子评论 |
+| `idx_article_root` | `article_id`, `root_id`, `is_deleted`, `id` | 普通联合索引 | 针对文章主评论分页的高效索引 |
+| `idx_root_id` | `root_id`, `is_deleted`, `id` | 普通联合索引 | 针对楼中楼子评论展开的高效索引 |
 | `idx_user_id` | `user_id` | 普通索引 | 查询用户评论 |
 
 ---
@@ -775,7 +780,7 @@ comment -> comment
 | `role_users` | `uk_user_role` | `user_id`, `role_id` | 用户角色唯一绑定 |
 | `role_users` | `idx_user_id` | `user_id` | 查询用户角色 |
 | `favorites` | `idx_user_id` | `user_id` | 查询用户收藏夹 |
-| `favorites` | `uk_user_folder_name` | `user_id`, `name`, `is_deleted` | 收藏夹名称唯一 |
+| `favorites` | `uk_user_folder_name` | `user_id`, `name` | 收藏夹名称唯一 |
 | `user_interaction` | `uk_interaction` | `user_id`, `target_id`, `target_type`, `action_type` | 防重复点赞/收藏 |
 | `user_interaction` | `idx_target` | `target_id`, `target_type`, `action_type` | 查询目标点赞/收藏 |
 | `user_interaction` | `idx_user_id` | `user_id` | 查询用户互动 |
@@ -786,7 +791,7 @@ comment -> comment
 | `hardware` | `idx_deleted_create_time` | `is_deleted`, `create_time` | 配件列表查询 |
 | `user_builds` | `idx_user_id_deleted` | `user_id`, `is_deleted` | 查询用户装机单 |
 | `user_builds` | `idx_public_status_create_time` | `is_public`, `status`, `is_deleted`, `create_time` | 查询公开装机单 |
-| `user_build_details` | `uk_build_hardware_deleted` | `build_id`, `hardware_id`, `is_deleted` | 防止装机单重复配件 |
+| `user_build_details` | `uk_build_hardware` | `build_id`, `hardware_id` | 防止装机单重复配件 |
 | `user_build_details` | `idx_build_id` | `build_id` | 查询装机单详情 |
 | `article` | `idx_user_id` | `user_id` | 查询作者文章 |
 | `article` | `idx_deleted_create_time` | `is_deleted`, `create_time` | 文章列表查询 |
@@ -796,7 +801,8 @@ comment -> comment
 | `article_tag_relation` | `uk_article_tag` | `article_id`, `tag_id` | 防止重复绑定标签 |
 | `article_tag_relation` | `idx_article_id` | `article_id` | 查询文章标签 |
 | `article_tag_relation` | `idx_tag_id` | `tag_id` | 查询标签文章 |
-| `comment` | `idx_article_parent_deleted` | `article_id`, `parent_id`, `is_deleted` | 查询文章评论/子评论 |
+| `comment` | `idx_article_root` | `article_id`, `root_id`, `is_deleted`, `id` | 文章主评论分页 |
+| `comment` | `idx_root_id` | `root_id`, `is_deleted`, `id` | 楼中楼子评论展开 |
 | `comment` | `idx_user_id` | `user_id` | 查询用户评论 |
 
 ---
@@ -889,10 +895,10 @@ article_tag
 4. 点赞和收藏统一基于 `user_interaction` 实现；
 5. 收藏夹仅负责组织收藏行为，收藏内容仍由 `user_interaction` 保存；
 6. 文章正文以 Markdown 原文形式保存到 `article.content`；
-7. 评论回复通过 `comment.parent_id` 实现，不单独拆回复表；
+7. 评论回复通过 `comment.parent_id` 实现，`root_id` 记录所属主楼层，不单独拆回复表；
 8. 用户权限通过 `users`、`roles`、`role_users` 实现；
 9. 公开内容列表主要依赖 `is_public`、`status`、`is_deleted`、`create_time` 组合查询；
-10. 逻辑删除统一使用 `is_deleted` 字段，不做物理删除。
+10. 逻辑删除统一使用 `is_deleted` 字段，不做物理删除。部分关联表（`role_users`、`favorites`、`user_interaction`、`user_build_details`、`article_tag_relation`）未设计 `is_deleted`，删除操作直接物理删除或被业务逻辑覆盖。
 
 ---
 
