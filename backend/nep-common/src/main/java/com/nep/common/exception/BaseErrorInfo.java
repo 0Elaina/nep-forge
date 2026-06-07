@@ -1,4 +1,4 @@
-package com.nep.exception;
+package com.nep.common.exception;
 
 /**
  * 基础错误信息接口

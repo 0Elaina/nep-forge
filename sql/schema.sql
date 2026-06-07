@@ -20,6 +20,10 @@ create table if not exists `users`(
     `create_time` datetime not null comment '创建时间',
     `update_time` datetime not null comment '更新时间',
     `is_deleted` tinyint(1) not null default 0 comment '是否删除',
+    `nickname` varchar(50) default null comment '昵称',
+    `bio` varchar(255) default null comment '简介',
+    `status` tinyint unsigned not null default 1 comment '用户状态(0: 禁用, 1: 正常)',
+    `last_login_time` datetime default null comment '最后登录时间',
 
     -- 索引设计
     unique key `uk_username` (`username`),
@@ -59,7 +63,6 @@ create table if not exists `role_users`(
     `role_id` int unsigned not null comment '角色id',
     `create_time` datetime not null comment '创建时间',
     `update_time` datetime not null comment '更新时间',
-    `is_deleted` tinyint(1) not null default 0 comment '是否删除(0:未删除, 1:已删除)',
 
     primary key(`id`),
     unique key `uk_user_role`(`user_id`, `role_id`), -- 联合索引, 确保同一用户不能重复分配同一角色
@@ -78,11 +81,10 @@ create table if not exists `favorites`(
     `is_public` tinyint(1) not null default 0 comment '是否公开(0:私密, 1:公开)',
     `create_time` datetime not null comment '收藏夹创建时间',
     `update_time` datetime not null comment '收藏夹更新时间',
-    `is_deleted` tinyint(1) not null default 0 comment '是否删除(0:未删除, 1:已删除)',
 
     primary key(`id`),
     key `idx_user_id`(`user_id`), -- 索引, 加速查询用户的收藏夹
-    unique key `uk_user_folder_name`(`user_id`, `name`, `is_deleted`)
+    unique key `uk_user_folder_name`(`user_id`, `name`)
 ) engine=InnoDB default charset=utf8mb4 comment='收藏夹表';
 
 
@@ -98,7 +100,6 @@ create table if not exists `user_interaction` (
     `folder_id` bigint unsigned not null default 0 comment '收藏夹id(用户行为为收藏时填写)',
     `create_time` datetime not null comment '创建时间',
     `update_time` datetime not null comment '更新时间',
-    `is_deleted` tinyint(1) not null default 0 comment '是否删除(0:未删除, 1:已删除)',
 
     primary key(`id`),
     unique key `uk_interaction`(`user_id`, `target_id`, `target_type`, `action_type`), -- 复合唯一索引, 确保用户对同一目标只能进行一种行为
@@ -210,10 +211,9 @@ create table if not exists `user_build_details`(
     `quantity` int unsigned not null default 1 comment '配件数量',
     `create_time` datetime not null comment '创建时间',
     `update_time` datetime not null comment '更新时间',
-    `is_deleted` tinyint(1) not null default 0 comment '是否删除(0:未删除, 1:已删除)',
 
     primary key(`id`),
-    unique key `uk_build_hardware_deleted`(`build_id`, `hardware_id`, `is_deleted`),
+    unique key `uk_build_hardware`(`build_id`, `hardware_id`),
     key `idx_build_id`(`build_id`) -- 索引, 加速查询装机单下的配件
 )engine=InnoDB default charset=utf8mb4 comment='装机单详情表';
 
@@ -287,7 +287,7 @@ create table if not exists `article_tag_relation`(
     `tag_id` int unsigned not null comment '标签id',
     `create_time` datetime not null comment '创建时间',
     `update_time` datetime not null comment '更新时间',
-    `is_deleted` tinyint(1) not null default 0 comment '是否删除',
+
     primary key(`id`),
     unique key `uk_article_tag`(`article_id`, `tag_id`),
     key `idx_article_id`(`article_id`),
@@ -305,6 +305,7 @@ create table if not exists `comment` (
     `article_id` bigint unsigned not null comment '文章id',
     `user_id` bigint unsigned not null comment '用户id',
     `content` text not null comment '评论内容',
+    `root_id` bigint unsigned not null default 0 comment '顶级评论id(0表示本身是主评论, 非0表示所属的主楼层id)',
     `parent_id` bigint unsigned not null default 0 comment '父级评论id(0表示直接评论文章)',
     `like_count` int unsigned not null default 0 comment '点赞量',
     `reply_to_user_id` bigint unsigned default null comment '回复的评论用户id',
@@ -314,6 +315,12 @@ create table if not exists `comment` (
     `is_deleted` tinyint(1) not null default 0 comment '是否删除(0:未删除, 1:已删除)',
 
     primary key(`id`),
-    key `idx_article_parent_deleted`(`article_id`, `parent_id`, `is_deleted`), -- 联合索引, 加速查询文章下的评论列表(过滤已删除和排序)
-    key `idx_user_id`(`user_id`) -- 索引, 加速查询用户下的评论
+    
+    -- 针对文章主评论分页的高效索引
+    key `idx_article_root`(`article_id`, `root_id`, `is_deleted`, `id`),
+    
+    -- 针对楼中楼子评论展开的高效索引
+    key `idx_root_id`(`root_id`, `is_deleted`, `id`),
+    
+    key `idx_user_id`(`user_id`)
 )engine=InnoDB default charset=utf8mb4 comment='评论表';

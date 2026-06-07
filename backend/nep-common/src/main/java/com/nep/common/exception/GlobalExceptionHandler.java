@@ -1,4 +1,4 @@
-package com.nep.exception;
+package com.nep.common.exception;
 
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -8,8 +8,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.http.ResponseEntity;
 
 import java.util.UUID;
-import com.nep.result.ApiResponse;
-import com.nep.constants.MessageConstant;
+
+import com.nep.common.constants.MessageConstant;
+import com.nep.common.result.ApiResponse;
+
 import java.util.stream.Collectors;
 import org.springframework.validation.BindException;
 import jakarta.validation.ConstraintViolationException;
@@ -18,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * 全局异常处理器。
@@ -184,6 +187,21 @@ public class GlobalExceptionHandler {
             DataIntegrityViolationException ex
     ) {
         return fail(CommonErrorCode.CONFLICT, MessageConstant.DATA_CONSTRAINT_VIOLATION);
+    }
+
+    /**
+     * 处理资源未找到异常。
+     * 当客户端请求的资源（如 API 路由）不存在时抛出。
+     * 返回 404 Not Found 状态码及统一错误信息。
+     *
+     * @param e NoResourceFoundException 异常对象
+     * @return 包含 404 状态码和资源不存在找到错误信息的响应实体
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNoResourceFoundException(NoResourceFoundException e) {
+        log.error(MessageConstant.NO_REQUEST_RESOURCE + ": {}", e);
+
+        return fail(CommonErrorCode.NOT_FOUND, MessageConstant.NO_REQUEST_RESOURCE);
     }
 
     /**

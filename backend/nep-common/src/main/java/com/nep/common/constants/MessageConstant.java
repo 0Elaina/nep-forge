@@ -1,4 +1,4 @@
-package com.nep.constants;
+package com.nep.common.constants;
 
 /**
  * 消息提示常量类
@@ -22,6 +22,7 @@ public final class MessageConstant {
     public static final String CONFLICT = "数据冲突";
     public static final String TOO_MANY_REQUESTS = "请求过于频繁";
     public static final String SYSTEM_ERROR = "系统内部错误";
+    public static final String NO_REQUEST_RESOURCE = "请求资源不存在";
 
     /* ===================== 用户模块 ===================== */
 
@@ -29,6 +30,13 @@ public final class MessageConstant {
     public static final String USER_DISABLED = "用户已被删除或不可用";
     public static final String USERNAME_EXISTS = "用户名已存在";
     public static final String EMAIL_EXISTS = "邮箱已存在";
+    public static final String USERNAME_NOT_BLANK = "用户名不能为空";
+    public static final String USERNAME_LENGTH_LIMIT = "用户名长度必须在 3-50 个字符之间";
+    public static final String EMAIL_NOT_BLANK = "邮箱不能为空";
+    public static final String EMAIL_INVALID = "邮箱格式不正确";
+    public static final String EMAIL_LENGTH_LIMIT = "邮箱长度不能超过 100 个字符";
+    public static final String PASSWORD_NOT_BLANK = "密码不能为空";
+    public static final String PASSWORD_LENGTH_LIMIT = "密码长度必须在 8-32 个字符之间";
 
     /* ===================== 装机单模块 ===================== */
 
