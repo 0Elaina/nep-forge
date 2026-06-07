@@ -149,7 +149,7 @@ NepForge 计划实现以下业务能力：
 
 当前数据库中已经包含以下相关表：
 
-1. `users`
+1. `users` — 除基础字段外，还包含 `nickname`(昵称)、`bio`(简介)、`status`(用户状态 0禁用/1正常)、`last_login_time`(最后登录时间) 等扩展字段
 2. `roles`
 3. `role_users`
 
@@ -249,7 +249,10 @@ NepForge 计划实现以下业务能力：
 当前数据库中已经包含以下相关表：
 
 1. `article`
-2. `comment`
+2. `article_category` — 文章分类
+3. `article_tag` — 文章标签
+4. `article_tag_relation` — 文章与标签关联
+5. `comment`
 
 ## 6.6 后台管理模块
 
@@ -322,35 +325,28 @@ MySQL / Redis / 对象存储
 
 ## 8.1 后端目录规划
 
+项目实际采用 **Maven 多模块架构**，按业务和基础设施拆分为独立子模块：
+
 ```text
-nepforge-backend
-├── src
-│   ├── main
-│   │   ├── java
-│   │   │   └── com
-│   │   │       └── nepforge
-│   │   │           ├── NepForgeApplication.java
-│   │   │           ├── common
-│   │   │           ├── config
-│   │   │           ├── security
-│   │   │           ├── modules
-│   │   │           │   ├── auth
-│   │   │           │   ├── user
-│   │   │           │   ├── hardware
-│   │   │           │   ├── build
-│   │   │           │   ├── article
-│   │   │           │   ├── comment
-│   │   │           │   ├── interaction
-│   │   │           │   └── admin
-│   │   │           └── infrastructure
-│   │   └── resources
-│   │       ├── application.yml
-│   │       ├── application-dev.yml
-│   │       ├── application-prod.yml
-│   │       └── mapper
-│   └── test
-├── pom.xml
-└── README.md
+backend/
+├── pom.xml                     # 父 POM，统一管理依赖版本
+├── nep-server/                 # 启动聚合模块（Spring Boot 入口 + 全局配置）
+│   └── src/main/java/com/nep/
+│       ├── NepForgeApplication.java
+│       ├── config/
+│       │   ├── Knife4jConfig.java
+│       │   └── MybatisPlusConfig.java
+│       └── controller/
+│           └── AuthController.java
+├── nep-common/                 # 公共组件模块（响应结构、异常体系、常量）
+├── nep-system/                 # 用户模块（注册 / 登录 / 角色 / 用户信息）
+├── nep-hardware/               # 配件库模块（分类 / 配件 CRUD / 搜索）
+├── nep-build/                  # 装机单模块（创建 / 编辑 / 价格计算）
+├── nep-content/                # 文章与评论模块
+├── nep-interaction/            # 互动模块（点赞 / 收藏 / 收藏夹）
+├── nep-framework/              # 框架配置模块（Jackson / CORS / Async）
+├── nep-security/               # 安全模块（Spring Security + JWT）
+└── nep-admin/                  # 后台管理模块
 ```
 
 ## 8.2 前端目录规划
@@ -386,6 +382,8 @@ nepforge-frontend
 
 ## 9.1 V0.1 项目骨架版
 
+> 状态：✅ **已完成**
+
 目标：完成项目初始化，使前后端能够启动。
 
 功能范围：
@@ -401,6 +399,8 @@ nepforge-frontend
 9. 完成基础 README。
 
 ## 9.2 V0.2 用户认证版
+
+> 状态：🔄 **开发中（feature/auth-register）**
 
 目标：完成用户体系。
 

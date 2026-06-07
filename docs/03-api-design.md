@@ -284,14 +284,14 @@ Authorization: Bearer <accessToken>
 
 ## 6. 枚举约定
 
-### 6.1 用户删除状态
+### 6.1 用户状态
 
-当前 `users` 表未设计独立 `status` 字段，用户可用性以 `is_deleted` 控制。
-
-| 值 | 说明 |
-|---:|---|
-| 0 | 未删除，可正常使用 |
-| 1 | 已删除，不允许登录或访问个人内容 |
+| 字段 | 值 | 说明 |
+|---:|---:|---|
+| `status` | 0 | 禁用（无法登录，数据保留） |
+| `status` | 1 | 正常 |
+| `is_deleted` | 0 | 未删除 |
+| `is_deleted` | 1 | 已删除
 
 ### 6.2 文章状态
 
@@ -450,7 +450,11 @@ GET /api/v1/users/me
     "id": "1839203849203849216",
     "username": "nepgear",
     "email": "nepgear@example.com",
+    "nickname": null,
+    "bio": null,
     "avatar": null,
+    "status": 1,
+    "lastLoginTime": null,
     "roles": ["ROLE_USER"],
     "createTime": "2026-05-30 14:30:00"
   }
@@ -469,21 +473,19 @@ PUT /api/v1/users/me/profile
 
 ```json
 {
-  "avatar": "https://example.com/avatar.png"
+  "avatar": "https://example.com/avatar.png",
+  "nickname": "nepgear_new",
+  "bio": "喜欢折腾硬件的程序员"
 }
 ```
 
-响应：
+校验规则：
 
-```json
-{
-  "code": 0,
-  "message": "success",
-  "data": true
-}
-```
-
-说明：当前数据库用户表只有 `avatar` 字段适合资料更新；如昵称、简介未入库，接口暂不设计相关字段。
+| 字段 | 规则 |
+|---|---|
+| avatar | 可选，有效的 URL 格式 |
+| nickname | 可选，长度 1-50 |
+| bio | 可选，长度不超过 255 |
 
 ---
 
@@ -1686,6 +1688,8 @@ GET /api/v1/users/{userId}/profile
   "data": {
     "id": "1839203849203849000",
     "username": "nepgear",
+    "nickname": null,
+    "bio": null,
     "avatar": "https://example.com/avatar.png",
     "articleCount": 10,
     "publicBuildCount": 3,
