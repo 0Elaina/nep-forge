@@ -1,9 +1,10 @@
-package com.nep.result;
+package com.nep.common.result;
 
 import lombok.Data;
 
 import java.io.Serializable;
-import com.nep.constants.MessageConstant;
+
+import com.nep.common.constants.MessageConstant;
 
 /**
  * API 响应实体

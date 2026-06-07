@@ -1,8 +1,10 @@
-package com.nep.exception;
+package com.nep.common.exception;
 
 import lombok.RequiredArgsConstructor;
+
+import com.nep.common.constants.MessageConstant;
+
 import lombok.Getter;
-import com.nep.constants.MessageConstant;
 
 /**
  * 交互错误码

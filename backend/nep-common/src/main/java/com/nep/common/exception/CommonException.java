@@ -1,4 +1,4 @@
-package com.nep.exception;
+package com.nep.common.exception;
 
 import lombok.Getter;
 
