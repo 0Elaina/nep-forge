@@ -46,6 +46,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
+
+        <!-- JWT 令牌提供者 -->
+        <dependency>
+            <groupId>com.nep</groupId>
+            <artifactId>nep-security</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
 </project>
