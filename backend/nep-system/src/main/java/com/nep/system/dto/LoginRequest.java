@@ -3,6 +3,9 @@ package com.nep.system.dto;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+import java.io.Serial;
+import java.io.Serializable;
+
 import com.nep.common.constants.MessageConstant;
 import com.nep.common.constants.ValidationConstant;
 import jakarta.validation.constraints.Size;
@@ -15,7 +18,11 @@ import jakarta.validation.constraints.Size;
  * @date 2026-06-14
  */
 @Data
-public class LoginRequest {
+public class LoginRequest implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     @NotBlank(message = MessageConstant.ACCOUNT_NOT_BLANK)
     @Size(max = ValidationConstant.ACCOUNT_MAX_LENGTH, message = MessageConstant.ACCOUNT_LENGTH_LIMIT)
     private String account;
