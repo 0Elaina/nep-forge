@@ -2,12 +2,16 @@ package com.nep.security.config;
 
 import com.nep.security.jwt.JwtAuthenticationFilter;
 import org.springframework.http.HttpMethod;
+
+import javax.management.relation.Role;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 
+import com.nep.common.constants.RoleConstants;
 import com.nep.security.handler.CustomAccessDeniedHandler;
 import com.nep.security.handler.CustomAuthenticationEntryPoint;
 
@@ -85,6 +89,26 @@ public class SecurityConfig {
 
             // 管理员接口: 需 ROLE_ADMIN 权限
             .requestMatchers("/api/v1/admin/**").hasAuthority("ROLE_ADMIN")
+
+            // 版主 + 管理员: 社区治理能力
+            .requestMatchers(HttpMethod.POST, "/api/v1/comments/**")
+            .hasAnyAuthority(RoleConstants.ROLE_MODERATOR, RoleConstants.ROLE_ADMIN)
+
+            .requestMatchers(HttpMethod.PUT, "/api/v1/articles/*/status")
+            .hasAnyAuthority(RoleConstants.ROLE_MODERATOR, RoleConstants.ROLE_ADMIN)
+
+            .requestMatchers(HttpMethod.PUT, "/api/v1/comments/*/status")
+            .hasAnyAuthority(RoleConstants.ROLE_MODERATOR, RoleConstants.ROLE_ADMIN)
+
+
+            // 登录用户: 普通用户、版主、管理员都可以使用的业务能力
+            .requestMatchers("/api/v1/users/me").authenticated()
+            .requestMatchers("/api/v1/builds/**").authenticated()
+            .requestMatchers("/api/v1/interactions/**").authenticated()
+            .requestMatchers("/api/v1/favorites/**").authenticated()
+            .requestMatchers(HttpMethod.POST, "/api/v1/articles/**").authenticated()
+            .requestMatchers(HttpMethod.PUT, "/api/v1/articles/**").authenticated()
+            .requestMatchers(HttpMethod.POST, "/api/v1/comments/**").authenticated()
 
             // 其余所有请求: 必须携带有效JWT令牌
             .anyRequest().authenticated()
