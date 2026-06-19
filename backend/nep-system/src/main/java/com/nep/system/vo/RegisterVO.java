@@ -1,5 +1,8 @@
 package com.nep.system.vo;
 
+import java.io.Serializable;
+import java.io.Serial;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -13,8 +16,11 @@ import lombok.Data;
  */
 @Data
 @AllArgsConstructor
-public class RegisterVO {
-    
+public class RegisterVO implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     /**
      * 用户ID，注册成功后由系统自动生成的唯一标识。
      */

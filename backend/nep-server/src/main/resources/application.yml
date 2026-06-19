@@ -49,3 +49,9 @@ mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
   configuration:
     map-underscore-to-camel-case: true # 驼峰命名
+
+nep:
+  jwt:
+    secret: ${nep.jwt.secret}
+    access-token-expiration: ${nep.jwt.access-token-expiration}
+    issuer: ${nep.jwt.issuer}

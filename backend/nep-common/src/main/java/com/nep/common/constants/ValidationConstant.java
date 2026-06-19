@@ -18,4 +18,5 @@ public final class ValidationConstant {
     public static final int EMAIL_MAX_LENGTH = 100;
     public static final int PASSWORD_MIN_LENGTH = 8;
     public static final int PASSWORD_MAX_LENGTH = 32;
+    public static final int ACCOUNT_MAX_LENGTH = 100;
 }

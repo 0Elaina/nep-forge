@@ -38,6 +38,9 @@ public final class MessageConstant {
     public static final String PASSWORD_NOT_BLANK = "密码不能为空";
     public static final String PASSWORD_LENGTH_LIMIT = "密码长度必须在 8-32 个字符之间";
 
+    public static final String ACCOUNT_NOT_BLANK = "账号不能为空";
+    public static final String ACCOUNT_LENGTH_LIMIT = "账号长度不能超过 100 个字符";
+
     /* ===================== 装机单模块 ===================== */
 
     public static final String BUILD_NOT_FOUND = "装机单不存在";

@@ -4,6 +4,8 @@ import com.nep.common.constants.MessageConstant;
 import com.nep.common.constants.ValidationConstant;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Email;
+import java.io.Serial;
+import java.io.Serializable;
 
 import lombok.Data;
 import jakarta.validation.constraints.NotBlank;
@@ -17,7 +19,9 @@ import jakarta.validation.constraints.NotBlank;
  * @date 2026-06-07
  */
 @Data
-public class RegisterRequest {
+public class RegisterRequest implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     
     /**
      * 用户名。
