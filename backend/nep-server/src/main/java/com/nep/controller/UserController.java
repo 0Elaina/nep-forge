@@ -28,6 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UserController {
 
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -46,7 +48,7 @@ public class UserController {
     @Operation(summary = "获取当前登录用户")
     @GetMapping("/me")
     public ApiResponse<CurrentUserDetailVO> getCurrentUser(
-            @RequestHeader(value = "AUTHORIZATION_HEADER", required = false) String authorizationHeader) {
+            @RequestHeader(value = AUTHORIZATION_HEADER, required = false) String authorizationHeader) {
         log.info("当前登录用户: {}", authorizationHeader);
 
         // 从Authorization头中提取Bearer令牌
