@@ -58,6 +58,11 @@ public final class MessageConstant {
 
     public static final String HARDWARE_NOT_FOUND = "配件不存在";
     public static final String HARDWARE_CATEGORY_NOT_FOUND = "配件分类不存在";
+    public static final String HARDWARE_PAGE_NUM_MIN_LIMIT = "配件页码不能小于 1";
+    public static final String HARDWARE_PAGE_SIZE_MIN_LIMIT = "配件每页条数不能小于 1";
+    public static final String HARDWARE_PAGE_SIZE_MAX_LIMIT = "配件每页条数不能超过 100";
+    public static final String HARDWARE_MIN_PRICE_MIN_LIMIT = "配件最低价格不能低于 0";
+    public static final String HARDWARE_MAX_PRICE_MIN_LIMIT = "配件最高价格不能低于 0";
 
     /* ===================== 文章模块 ===================== */
 
