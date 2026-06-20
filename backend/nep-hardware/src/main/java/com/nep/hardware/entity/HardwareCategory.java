@@ -1,15 +1,15 @@
 package com.nep.hardware.entity;
 
 import java.io.Serial;
-import java.io.Serializable;
-import java.time.LocalDateTime;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.nep.common.entity.BaseLogicEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
@@ -18,8 +18,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @TableName("hw_category")
-public class HardwareCategory implements Serializable {
+public class HardwareCategory extends BaseLogicEntity {
     @Serial
     private static final long serialVersionUID = 1L;
 
@@ -39,7 +40,4 @@ public class HardwareCategory implements Serializable {
     // 排序顺序(越小越靠前)
     private Integer sortOrder;
 
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
-    private Integer isDeleted;
 }

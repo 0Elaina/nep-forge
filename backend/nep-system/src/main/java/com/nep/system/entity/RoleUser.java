@@ -4,12 +4,13 @@ import java.io.Serial;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.nep.common.entity.BaseTimeEntity;
+import lombok.EqualsAndHashCode;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.io.Serializable;
 import com.baomidou.mybatisplus.annotation.IdType;
-import java.time.LocalDateTime;
 
 /**
  * 角色用户关联实体类，对应数据库中的 role_users 表。
@@ -18,9 +19,10 @@ import java.time.LocalDateTime;
  */
 @Data
 @TableName("role_users")
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoleUser implements Serializable {
+public class RoleUser extends BaseTimeEntity {
     @Serial
     private static final long serialVersionUID = 1L;
 
@@ -29,6 +31,4 @@ public class RoleUser implements Serializable {
 
     private Long userId;
     private Integer roleId;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
 }
