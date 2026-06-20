@@ -30,4 +30,13 @@ public interface AuthService {
      * @return 登录成功后的登录响应视图对象，包含访问令牌、令牌类型、过期时间、当前用户信息等
      */
     LoginResponse login(LoginRequest request);
+
+    /**
+     * 退出登录。
+     * 清除当前用户的访问令牌，使用户无法继续使用系统服务。
+     *
+     * @return true 如果退出成功，否则返回 false
+     * @return false 如果退出失败，例如用户未登录或会话已过期
+     */
+    Boolean logout();
 }
