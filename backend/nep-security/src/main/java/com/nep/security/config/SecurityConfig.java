@@ -3,8 +3,6 @@ package com.nep.security.config;
 import com.nep.security.jwt.JwtAuthenticationFilter;
 import org.springframework.http.HttpMethod;
 
-import javax.management.relation.Role;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
