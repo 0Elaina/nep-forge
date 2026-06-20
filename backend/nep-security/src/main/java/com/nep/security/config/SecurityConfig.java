@@ -2,7 +2,6 @@ package com.nep.security.config;
 
 import com.nep.security.jwt.JwtAuthenticationFilter;
 import org.springframework.http.HttpMethod;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -105,6 +104,8 @@ public class SecurityConfig {
             .requestMatchers("/api/v1/builds/**").authenticated()
             .requestMatchers("/api/v1/interactions/**").authenticated()
             .requestMatchers("/api/v1/favorites/**").authenticated()
+            .requestMatchers(HttpMethod.GET, "/api/v1/users/me").authenticated()
+            .requestMatchers(HttpMethod.PUT, "/api/v1/users/me/profile").authenticated()
             .requestMatchers(HttpMethod.POST, "/api/v1/articles/**").authenticated()
             .requestMatchers(HttpMethod.PUT, "/api/v1/articles/**").authenticated()
             .requestMatchers(HttpMethod.POST, "/api/v1/comments/**").authenticated()
