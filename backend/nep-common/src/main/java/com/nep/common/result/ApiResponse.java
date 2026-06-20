@@ -2,6 +2,7 @@ package com.nep.common.result;
 
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import com.nep.common.constants.MessageConstant;
@@ -14,6 +15,10 @@ import com.nep.common.constants.MessageConstant;
  */
 @Data
 public class ApiResponse<T> implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private Integer code; // 状态码 0: 成功 其他: 失败
     private String message; // 状态描述
     private T data; // 数据

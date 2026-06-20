@@ -49,4 +49,18 @@ public class AuthController {
         log.info("用户登录请求: {}", request.getAccount());
         return ApiResponse.success(authService.login(request));
     }
+
+
+    /**
+     * 用户退出登录
+     * 清除当前用户的访问令牌，使用户无法继续使用系统服务。
+     *
+     * @return ApiResponse<Boolean> 退出登录成功后的布尔值视图对象，包含 true
+     */
+    @Operation(summary = "用户退出登录")
+    @PostMapping("/logout")
+    public ApiResponse<Boolean> logout() {
+        log.info("用户退出登录");
+        return ApiResponse.success(authService.logout());
+    }
 }

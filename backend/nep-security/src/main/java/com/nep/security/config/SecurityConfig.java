@@ -2,7 +2,6 @@ package com.nep.security.config;
 
 import com.nep.security.jwt.JwtAuthenticationFilter;
 import org.springframework.http.HttpMethod;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -65,9 +64,10 @@ public class SecurityConfig {
         )
         // 接口权限配置: 按粒度从松到紧排列 (白名单 → 公共读 → 管理员 → 其余需认证)
         .authorizeHttpRequests(auth -> auth
-            // 认证接口: 注册/登录无需令牌
+            // 认证接口: 注册/登录/退出登录无需令牌认证
             .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").permitAll()
 
             // Swagger/Knife4j 文档接口: 开放给开发和测试环境
             .requestMatchers(
@@ -104,6 +104,8 @@ public class SecurityConfig {
             .requestMatchers("/api/v1/builds/**").authenticated()
             .requestMatchers("/api/v1/interactions/**").authenticated()
             .requestMatchers("/api/v1/favorites/**").authenticated()
+            .requestMatchers(HttpMethod.GET, "/api/v1/users/me").authenticated()
+            .requestMatchers(HttpMethod.PUT, "/api/v1/users/me/profile").authenticated()
             .requestMatchers(HttpMethod.POST, "/api/v1/articles/**").authenticated()
             .requestMatchers(HttpMethod.PUT, "/api/v1/articles/**").authenticated()
             .requestMatchers(HttpMethod.POST, "/api/v1/comments/**").authenticated()

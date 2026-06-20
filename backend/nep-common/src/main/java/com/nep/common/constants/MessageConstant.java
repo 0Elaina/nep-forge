@@ -10,7 +10,8 @@ package com.nep.common.constants;
  * @date 2026-06-06
  */
 public final class MessageConstant {
-    private MessageConstant() {}
+    private MessageConstant() {
+    }
 
     /* ===================== 通用 ===================== */
 
@@ -40,6 +41,12 @@ public final class MessageConstant {
 
     public static final String ACCOUNT_NOT_BLANK = "账号不能为空";
     public static final String ACCOUNT_LENGTH_LIMIT = "账号长度不能超过 100 个字符";
+    public static final String AVATAR_URL_INVALID = "头像地址格式不正确";
+    public static final String AVATAR_LENGTH_LIMIT = "头像地址长度不能超过 512 个字符";
+    public static final String NICKNAME_LENGTH_LIMIT = "昵称长度不能超过 50 个字符";
+    public static final String BIO_LENGTH_LIMIT = "简介长度不能超过 255 个字符";
+    public static final String USER_PROFILE_UPDATE_EMPTY = "至少需要修改一项用户资料";
+    public static final String USER_PROFILE_UPDATE_FAILED = "更新用户资料失败";
 
     /* ===================== 装机单模块 ===================== */
 
@@ -51,6 +58,11 @@ public final class MessageConstant {
 
     public static final String HARDWARE_NOT_FOUND = "配件不存在";
     public static final String HARDWARE_CATEGORY_NOT_FOUND = "配件分类不存在";
+    public static final String HARDWARE_PAGE_NUM_MIN_LIMIT = "配件页码不能小于 1";
+    public static final String HARDWARE_PAGE_SIZE_MIN_LIMIT = "配件每页条数不能小于 1";
+    public static final String HARDWARE_PAGE_SIZE_MAX_LIMIT = "配件每页条数不能超过 100";
+    public static final String HARDWARE_MIN_PRICE_MIN_LIMIT = "配件最低价格不能低于 0";
+    public static final String HARDWARE_MAX_PRICE_MIN_LIMIT = "配件最高价格不能低于 0";
 
     /* ===================== 文章模块 ===================== */
 
