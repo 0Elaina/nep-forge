@@ -22,6 +22,12 @@ import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * JWT认证过滤器
+ * 从请求头中提取JWT令牌，解析令牌，设置用户信息到SecurityContextHolder
+ * 如果令牌无效或缺失，直接放请求通过
+ * 如果令牌有效，解析令牌，设置用户信息到SecurityContextHolder
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -36,16 +42,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         @NonNull HttpServletResponse response,
         @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        String authorization = request.getHeader(AUTHORIZATION_HEADER);
+        String token = extractToken(request);
 
-        if (!StringUtils.hasText(authorization) || !authorization.startsWith(BEARER_PREFIX)) {
-            // 如果没有Authorization头或不是Bearer令牌, 过滤请求
+        if (!StringUtils.hasText(token)) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        // 从Authorization头中提取令牌
-        String token = authorization.substring(BEARER_PREFIX.length()).trim();
 
         try {
             JwtUserInfo userInfo = jwtTokenProvider.parseAccessToken(token);
@@ -77,5 +79,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * 从请求头中提取JWT令牌
+     * @param request HttpServletRequest对象
+     * @return JWT令牌
+     */
+    private String extractToken(HttpServletRequest request) {
+        String authorization = request.getHeader(AUTHORIZATION_HEADER);
+
+        if(!StringUtils.hasText(authorization) || !authorization.startsWith(BEARER_PREFIX)) {
+            return null;
+        }
+
+        return authorization.substring(BEARER_PREFIX.length()).trim();
     }
 }
