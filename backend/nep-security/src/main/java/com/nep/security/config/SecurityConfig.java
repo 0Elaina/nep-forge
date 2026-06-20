@@ -65,9 +65,10 @@ public class SecurityConfig {
         )
         // 接口权限配置: 按粒度从松到紧排列 (白名单 → 公共读 → 管理员 → 其余需认证)
         .authorizeHttpRequests(auth -> auth
-            // 认证接口: 注册/登录无需令牌
+            // 认证接口: 注册/登录/退出登录无需令牌认证
             .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").permitAll()
 
             // Swagger/Knife4j 文档接口: 开放给开发和测试环境
             .requestMatchers(

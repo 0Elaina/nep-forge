@@ -22,6 +22,8 @@ import com.nep.common.exception.CommonErrorCode;
 import com.nep.system.entity.Role;
 import com.nep.common.exception.UserErrorCode;
 import java.time.LocalDateTime;
+
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.nep.system.entity.RoleUser;
 import java.util.List;
@@ -151,6 +153,20 @@ public class AuthServiceImpl implements AuthService {
                         .roles(roleCodes)
                         .build())
                 .build();
+    }
+
+
+    /**
+     * 退出登录。
+     * 清除当前用户的访问令牌，使用户无法继续使用系统服务。
+     *
+     * @return true 如果退出成功，否则返回 false
+     * @return false 如果退出失败，例如用户未登录或会话已过期
+     */
+    @Override
+    public Boolean logout() {
+        SecurityContextHolder.clearContext();
+        return Boolean.TRUE;
     }
 
     /**
