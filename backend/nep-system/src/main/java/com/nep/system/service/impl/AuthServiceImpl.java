@@ -70,28 +70,20 @@ public class AuthServiceImpl implements AuthService {
                     "默认角色 ROLE_USER 不存在，请检查数据库初始化脚本");
         }
 
-        LocalDateTime now = LocalDateTime.now();
-
         // 创建并保存用户实体
         User user = new User();
         user.setUsername(username);
         user.setEmail(email);
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setAvatar(null);
-        user.setCreateTime(now);
-        user.setUpdateTime(now);
-        user.setIsDeleted(FieldConstant.NOT_DELETED);
         user.setNickname(null);
         user.setBio(null);
         user.setStatus(FieldConstant.ENABLED);
-        user.setLastLoginTime(now);
         userMapper.insert(user);
 
         RoleUser roleUser = new RoleUser();
         roleUser.setUserId(user.getId());
         roleUser.setRoleId(defaultRole.getId());
-        roleUser.setCreateTime(now);
-        roleUser.setUpdateTime(now);
 
         roleUserMapper.insert(roleUser);
 
@@ -140,7 +132,6 @@ public class AuthServiceImpl implements AuthService {
         User updateUser = new User();
         updateUser.setId(user.getId());
         updateUser.setLastLoginTime(now);
-        updateUser.setUpdateTime(now);
         // 更新用户信息
         userMapper.updateById(updateUser);
 

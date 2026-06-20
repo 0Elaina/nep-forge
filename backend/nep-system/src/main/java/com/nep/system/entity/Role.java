@@ -1,15 +1,16 @@
 package com.nep.system.entity;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.nep.common.entity.BaseLogicEntity;
+
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import java.io.Serializable;
 import java.io.Serial;
 import com.baomidou.mybatisplus.annotation.TableId;
-import java.time.LocalDateTime;
 
 /**
  * 角色实体类，对应数据库中的 roles 表。
@@ -18,9 +19,10 @@ import java.time.LocalDateTime;
  */
 @Data
 @TableName("roles")
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Role implements Serializable {
+public class Role extends BaseLogicEntity {
     @Serial
     private static final long serialVersionUID = 1L;
 
@@ -30,7 +32,4 @@ public class Role implements Serializable {
     private String roleName;
     private String roleCode;
     private String description;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
-    private Integer isDeleted;
 }
