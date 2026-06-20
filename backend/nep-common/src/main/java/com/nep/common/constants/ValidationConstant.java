@@ -22,4 +22,11 @@ public final class ValidationConstant {
     public static final int AVATAR_MAX_LENGTH = 512;
     public static final int NICKNAME_MAX_LENGTH = 50;
     public static final int BIO_MAX_LENGTH = 255;
+
+    /*===================== 配件模块 ====================== */
+    public static final int HARDWARE_PAGE_NUM_MIN = 1;
+    public static final int HARDWARE_PAGE_SIZE_MIN = 1;
+    public static final int HARDWARE_PAGE_SIZE_MAX = 100;
+    public static final String HARDWARE_MIN_PRICE_MIN = "0.00";
+    public static final String HARDWARE_MAX_PRICE_MIN = "0.00";
 }

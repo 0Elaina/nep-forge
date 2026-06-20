@@ -47,7 +47,7 @@ public class HardwareCategoryServiceImpl implements HardwareCategoryService {
         );
 
         // 如果查询结果为空，返回空列表
-        if (categories.isEmpty() || categories == null) return List.of();
+        if (categories == null || categories.isEmpty()) return List.of();
 
         // 将查询结果转换为硬件分类树VO列表
         // 并根据ID创建一个映射，方便后续根据ID快速查找
