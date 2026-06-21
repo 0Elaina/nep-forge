@@ -2,6 +2,7 @@ package com.nep.controller;
 
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -9,6 +10,7 @@ import com.nep.common.result.ApiResponse;
 import com.nep.common.result.PageResult;
 import com.nep.hardware.dto.HardwareQueryRequest;
 import com.nep.hardware.service.HardwareService;
+import com.nep.hardware.vo.HardwareDetailVO;
 import com.nep.hardware.vo.HardwareListVO;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,5 +43,17 @@ public class HardwareController {
     ) {
         log.info("获取配件分类列表，请求参数：{}", request);
         return ApiResponse.success(hardwareService.listHardware(request));
+    }
+
+    /**
+     * 获取配件详情
+     * @param id 配件ID
+     * @return 配件详情
+     */
+    @Operation(summary = "获取配件详情")
+    @GetMapping("/{id}")
+    public ApiResponse<HardwareDetailVO> getHardwareDetail(@PathVariable Long id) {
+        log.info("获取配件详情, 配件ID: {}", id);
+        return ApiResponse.success(hardwareService.getHardwareDetail(id));
     }
 }
