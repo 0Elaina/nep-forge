@@ -51,7 +51,7 @@ public class Hardware extends BaseLogicEntity {
     private String sourceUrl;
 
     // 发布时间
-    private LocalDate releaseTime;
+    private LocalDate releaseDate;
 
     // 最近同步时间
     private LocalDateTime lastSyncTime;

@@ -1,18 +1,28 @@
 package com.nep.hardware.service.impl;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.nep.common.constants.FieldConstant;
 import com.nep.common.constants.QueryConstant;
+import com.nep.common.exception.CommonException;
+import com.nep.common.exception.HardwareErrorCode;
 import com.nep.common.result.PageResult;
+import com.nep.hardware.vo.HardwareDetailVO;
 import com.nep.hardware.vo.HardwareListVO;
 import com.nep.hardware.dto.HardwareQueryRequest;
 import com.nep.hardware.entity.Hardware;
+import com.nep.hardware.entity.HardwareCategory;
+import com.nep.hardware.mapper.HardwareCategoryMapper;
 import com.nep.hardware.mapper.HardwareMapper;
 import com.nep.hardware.service.HardwareService;
 
@@ -35,6 +45,8 @@ public class HardwareServiceImpl implements HardwareService {
     private static final String SORT_FIELD_RELEASE_DATE = "releaseDate";
 
     private final HardwareMapper hardwareMapper;
+    private final ObjectMapper objectMapper;
+    private final HardwareCategoryMapper hardwareCategoryMapper;
 
     /**
      * 查询配件列表
@@ -61,7 +73,7 @@ public class HardwareServiceImpl implements HardwareService {
                 Hardware::getBrand,
                 Hardware::getPrice,
                 Hardware::getCoverImage,
-                Hardware::getReleaseTime,
+                Hardware::getReleaseDate,
                 Hardware::getSourceName,
                 Hardware::getCreateTime);
 
@@ -117,6 +129,42 @@ public class HardwareServiceImpl implements HardwareService {
                 resultPage.getSize());
     }
 
+
+    /**
+     * 查询配件详情
+     * @param id 配件ID
+     * @return 配件详情
+     */
+    @Override
+    public HardwareDetailVO getHardwareDetail(Long id) {
+        // 构建查询条件包装器，查询指定ID的配件
+        Hardware hardware = hardwareMapper.selectOne(
+            new LambdaQueryWrapper<Hardware>()
+                .eq(Hardware::getId, id)
+                .eq(Hardware::getIsDeleted, FieldConstant.NOT_DELETED)
+                .last("limit 1")
+        );
+
+        if (hardware == null) {
+            throw new CommonException(HardwareErrorCode.HARDWARE_NOT_FOUND);
+        }
+
+        // 查询配件分类
+        HardwareCategory category = hardwareCategoryMapper.selectOne(
+            new LambdaQueryWrapper<HardwareCategory>()
+                .eq(HardwareCategory::getId, hardware.getCategoryId())
+                .eq(HardwareCategory::getIsDeleted, FieldConstant.NOT_DELETED)
+                .last("limit 1")
+        );
+
+        String categoryName = category == null ? null : category.getName();
+
+        return toDetailVO(hardware, categoryName);
+    }
+
+
+
+
     /**
      * 校验并归一化分页页码
      * 
@@ -129,7 +177,6 @@ public class HardwareServiceImpl implements HardwareService {
         }
         return pageNum;
     }
-
     /**
      * 校验并归一化分页每页数量
      * 
@@ -169,7 +216,7 @@ public class HardwareServiceImpl implements HardwareService {
 
         // 按发布时间排序
         if (SORT_FIELD_RELEASE_DATE.equals(sortField)) {
-            wrapper.orderBy(true, isAsc, Hardware::getReleaseTime);
+            wrapper.orderBy(true, isAsc, Hardware::getReleaseDate);
             return;
         }
 
@@ -183,6 +230,30 @@ public class HardwareServiceImpl implements HardwareService {
         wrapper.orderByDesc(Hardware::getCreateTime);
 
     }
+
+     /**
+     * 解析配件差异化参数JSON字符串为 Map
+     * 
+     * @param specsJson 配件差异化参数JSON字符串
+     * @return 解析后的 Map 对象
+     */
+    private Map<String, Object> parseSpecs(String specsJson) {
+        // 检查 JSON 字符串是否为空
+        if (!StringUtils.hasText(specsJson)) {
+            return Collections.emptyMap();
+        }
+
+        // 解析 JSON 字符串为 Map
+        try {
+            return objectMapper.readValue(
+                specsJson,
+                new TypeReference<Map<String, Object>>() {}
+            );
+        } catch (JsonProcessingException e) {
+            return Collections.emptyMap();
+        }
+    }
+
 
     /**
      * 将硬件实体转换为列表VO
@@ -198,9 +269,38 @@ public class HardwareServiceImpl implements HardwareService {
                 .brand(hardware.getBrand())
                 .price(hardware.getPrice())
                 .coverImage(hardware.getCoverImage())
-                .releaseDate(hardware.getReleaseTime())
+                .releaseDate(hardware.getReleaseDate())
                 .sourceName(hardware.getSourceName())
                 .createTime(hardware.getCreateTime())
                 .build();
     }
+
+
+    /**
+     * 将硬件实体转换为详情VO
+     * 
+     * @param hardware 硬件实体
+     * @param categoryName 分类名称
+     * @return 详情VO
+     */
+    private HardwareDetailVO toDetailVO(Hardware hardware, String categoryName) {
+        return HardwareDetailVO.builder()
+                .id(String.valueOf(hardware.getId()))
+                .categoryId(hardware.getCategoryId())
+                .categoryName(categoryName)
+                .name(hardware.getName())
+                .brand(hardware.getBrand())
+                .price(hardware.getPrice())
+                .coverImage(hardware.getCoverImage())
+                .sourceName(hardware.getSourceName())
+                .sourceUrl(hardware.getSourceUrl())
+                .releaseDate(hardware.getReleaseDate())
+                .lastSyncTime(hardware.getLastSyncTime())
+                .specs(parseSpecs(hardware.getSpecsJson()))
+                .liked(false)
+                .favorited(false)
+                .createTime(hardware.getCreateTime())
+                .build();
+    }
+
 }

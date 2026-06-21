@@ -2,6 +2,7 @@ package com.nep.hardware.service;
 
 import com.nep.common.result.PageResult;
 import com.nep.hardware.dto.HardwareQueryRequest;
+import com.nep.hardware.vo.HardwareDetailVO;
 import com.nep.hardware.vo.HardwareListVO;
 
 /**
@@ -15,4 +16,11 @@ public interface HardwareService {
      * @return 配件列表
      */
     PageResult<HardwareListVO> listHardware(HardwareQueryRequest request);    
+
+    /**
+     * 查询配件详情
+     * @param id 配件ID
+     * @return 配件详情VO
+     */
+    HardwareDetailVO getHardwareDetail(Long id);
 }
