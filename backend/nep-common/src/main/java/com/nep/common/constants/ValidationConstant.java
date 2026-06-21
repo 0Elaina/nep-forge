@@ -31,4 +31,10 @@ public final class ValidationConstant {
     public static final String HARDWARE_MAX_PRICE_MIN = "0.00";
     public static final int HARDWARE_COMPARE_SIZE_MIN = 2;
     public static final int HARDWARE_COMPARE_SIZE_MAX = 5;
+    public static final int HARDWARE_NAME_MAX_LENGTH = 100;
+    public static final int HARDWARE_BRAND_NAME_MAX_LENGTH = 50;
+    public static final String HARDWARE_PRICE_MIN = "0.00";
+    public static final int HARDWARE_SOURCE_NAME_MAX_LENGTH = 100;
+    public static final int HARDWARE_SOURCE_URL_MAX_LENGTH = 512;
+    public static final int HARDWARE_COVER_IMAGE_URL_MAX_LENGTH = 512;
 }

@@ -3,6 +3,7 @@ package com.nep.hardware.service;
 import com.nep.common.result.PageResult;
 import com.nep.hardware.dto.HardwareCompareRequest;
 import com.nep.hardware.dto.HardwareQueryRequest;
+import com.nep.hardware.dto.HardwareSaveRequest;
 import com.nep.hardware.vo.HardwareCompareVO;
 import com.nep.hardware.vo.HardwareDetailVO;
 import com.nep.hardware.vo.HardwareListVO;
@@ -33,4 +34,28 @@ public interface HardwareService {
      * @return 对比结果
      */
     HardwareCompareVO compareHardware(HardwareCompareRequest request);
+
+    /**
+     * 创建配件
+     * @param request
+     * @return 创建的配件ID
+     */
+    Long createHardware(HardwareSaveRequest request);
+
+    /**
+     * 更新配件
+     * @param id 配件ID
+     * @param request
+     * @return 是否更新成功
+     */
+    Boolean updateHardware(Long id, HardwareSaveRequest request);
+
+    /**
+     * 删除配件
+     * @param id 配件ID
+     * @return 是否删除成功
+     */
+    Boolean deleteHardware(Long id);
+
+
 }

@@ -1,5 +1,6 @@
 package com.nep.hardware.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -32,6 +34,7 @@ import com.nep.hardware.vo.HardwareDetailVO;
 import com.nep.hardware.vo.HardwareListVO;
 import com.nep.hardware.dto.HardwareCompareRequest;
 import com.nep.hardware.dto.HardwareQueryRequest;
+import com.nep.hardware.dto.HardwareSaveRequest;
 import com.nep.hardware.entity.Hardware;
 import com.nep.hardware.entity.HardwareCategory;
 import com.nep.hardware.mapper.HardwareCategoryMapper;
@@ -215,7 +218,7 @@ public class HardwareServiceImpl implements HardwareService {
                                 Hardware::getCoverImage,
                                 Hardware::getSpecsJson)
                         .in(Hardware::getId, hardwareIds)
-                        .eq(Hardware::getId, FieldConstant.NOT_DELETED));
+                        .eq(Hardware::getIsDeleted, FieldConstant.NOT_DELETED));
 
         // 校验查询结果是否与对比配件ID数量一致
         // 如果查询结果为空或数量与对比配件ID数量不一致, 则抛出异常
@@ -274,6 +277,100 @@ public class HardwareServiceImpl implements HardwareService {
                 .fields(buildCompareFields(items))
                 .build();
     }
+
+    
+    /**
+     * 创建配件
+     * @param request 创建参数
+     * @return 创建的配件ID
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Long createHardware(HardwareSaveRequest request) {
+        // 校验请求参数是否为空
+        if (request == null){
+            throw new CommonException(CommonErrorCode.REQUEST_PARAM_ERROR);
+        }
+
+        // 校验配件分类是否存在
+        validateCategoryExists(request.getCategoryId());
+
+        Hardware hardware = new Hardware();
+        fillHardware(hardware, request);
+        hardware.setLastSyncTime(LocalDateTime.now());
+
+        hardwareMapper.insert(hardware);
+        return hardwareMapper.selectOne(
+            new LambdaQueryWrapper<Hardware>()
+                    .eq(Hardware::getId, hardware.getId())
+                    .eq(Hardware::getIsDeleted, FieldConstant.NOT_DELETED)
+                    .last("limit 1")
+        ).getId();
+    }
+
+
+    /**
+     * 更新配件
+     * @param id 配件ID
+     * @param request 更新参数
+     * @return 是否更新成功
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateHardware(Long id, HardwareSaveRequest request) {
+        if(id == null) {
+            throw new CommonException(CommonErrorCode.REQUEST_PARAM_ERROR, MessageConstant.HARDWARE_ID_NOT_NULL);
+        }
+        if(request == null) {
+            throw new CommonException(CommonErrorCode.REQUEST_PARAM_ERROR);
+        }
+
+        Hardware hardware = hardwareMapper.selectOne(
+            new LambdaQueryWrapper<Hardware>()
+                    .eq(Hardware::getId, id)
+                    .eq(Hardware::getIsDeleted, FieldConstant.NOT_DELETED)
+                    .last("limit 1")
+        );
+
+        if(hardware == null) {
+            throw new CommonException(HardwareErrorCode.HARDWARE_NOT_FOUND);
+        }
+
+        validateCategoryExists(request.getCategoryId());
+
+        fillHardware(hardware, request);
+        hardware.setLastSyncTime(LocalDateTime.now());
+
+        return hardwareMapper.updateById(hardware) > 0;
+    }
+
+
+    /**
+     * 删除配件
+     * @param id 配件ID
+     * @return 是否删除成功
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean deleteHardware(Long id) {
+        if(id == null) {
+            throw new CommonException(CommonErrorCode.REQUEST_PARAM_ERROR, MessageConstant.HARDWARE_ID_NOT_NULL);
+        }
+
+        Hardware hardware = hardwareMapper.selectOne(
+            new LambdaQueryWrapper<Hardware>()
+                    .eq(Hardware::getId, id)
+                    .eq(Hardware::getIsDeleted, FieldConstant.NOT_DELETED)
+                    .last("limit 1")
+        );
+
+        if(hardware == null) {
+            throw new CommonException(HardwareErrorCode.HARDWARE_NOT_FOUND);
+        }
+
+        return hardwareMapper.deleteById(id) > 0;
+    }
+
 
     /**
      * 校验并归一化分页页码
@@ -342,6 +439,36 @@ public class HardwareServiceImpl implements HardwareService {
 
     }
 
+
+    /**
+     * 去除字符串首尾空格，若字符串为空则返回 null
+     * 使用情景：
+     * 1. 从请求参数中获取字符串值时，需要先去除首尾空格。
+     * 2. 从数据库中查询字符串值时，需要先判断是否为空，再进行处理。
+     * 
+     * @param value 输入字符串
+     * @return 处理后的字符串
+     */
+    private String trimToNull(String value){
+        if(!StringUtils.hasText(value)) return null;
+        return value.trim();
+    }
+
+    /**
+     * 将 Map 转换为 JSON 字符串
+     * @param specs 输入 Map 对象
+     * @return JSON 字符串
+     */
+    private String toSpecsJson(Map<String, Object> specs) {
+        if(specs == null || specs.isEmpty()) return null;
+
+        try {
+            return objectMapper.writeValueAsString(specs);
+        } catch (JsonProcessingException e) {
+            throw new CommonException(CommonErrorCode.REQUEST_PARAM_ERROR, e, MessageConstant.PARAM_JSON_ERROR);
+        }
+    }
+
     /**
      * 解析配件差异化参数JSON字符串为 Map
      * 
@@ -363,6 +490,45 @@ public class HardwareServiceImpl implements HardwareService {
         } catch (JsonProcessingException e) {
             return Collections.emptyMap();
         }
+    }
+
+
+    /**
+     * 校验硬件分类是否存在
+     * @param categoryId 硬件分类ID
+     */
+    private void validateCategoryExists(Integer categoryId) {
+        if (categoryId == null) {
+            throw new CommonException(HardwareErrorCode.HARDWARE_CATEGORY_NOT_FOUND);
+        }
+
+        Long count = hardwareCategoryMapper.selectCount(
+            new LambdaQueryWrapper<HardwareCategory>()
+                .eq(HardwareCategory::getId, categoryId)
+                .eq(HardwareCategory::getIsDeleted, FieldConstant.NOT_DELETED)
+                .eq(HardwareCategory::getStatus, FieldConstant.ENABLED)
+        );
+
+        if(count == null || count == 0) {
+            throw new CommonException(HardwareErrorCode.HARDWARE_CATEGORY_NOT_FOUND);
+        }
+    }
+
+    /**
+     * 填充硬件实体的字段，根据请求参数进行处理。
+     * @param hardware 硬件实体
+     * @param request 保存请求参数
+     */
+    private void fillHardware(Hardware hardware, HardwareSaveRequest request) {
+        hardware.setCategoryId(request.getCategoryId());
+        hardware.setName(request.getName().trim());
+        hardware.setBrand(trimToNull(request.getBrand()));
+        hardware.setPrice(request.getPrice());
+        hardware.setSourceName(trimToNull(request.getSourceName()));
+        hardware.setSourceUrl(trimToNull(request.getSourceUrl()));
+        hardware.setReleaseDate(request.getReleaseDate());
+        hardware.setCoverImage(trimToNull(request.getCoverImage()));
+        hardware.setSpecsJson(toSpecsJson(request.getSpecs()));
     }
 
     /**
