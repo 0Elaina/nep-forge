@@ -1,8 +1,13 @@
 package com.nep.hardware.service.impl;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -13,12 +18,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.nep.common.constants.FieldConstant;
+import com.nep.common.constants.MessageConstant;
 import com.nep.common.constants.QueryConstant;
+import com.nep.common.constants.ValidationConstant;
+import com.nep.common.exception.CommonErrorCode;
 import com.nep.common.exception.CommonException;
 import com.nep.common.exception.HardwareErrorCode;
 import com.nep.common.result.PageResult;
+import com.nep.hardware.vo.HardwareCompareFieldVO;
+import com.nep.hardware.vo.HardwareCompareItemVO;
+import com.nep.hardware.vo.HardwareCompareVO;
 import com.nep.hardware.vo.HardwareDetailVO;
 import com.nep.hardware.vo.HardwareListVO;
+import com.nep.hardware.dto.HardwareCompareRequest;
 import com.nep.hardware.dto.HardwareQueryRequest;
 import com.nep.hardware.entity.Hardware;
 import com.nep.hardware.entity.HardwareCategory;
@@ -50,6 +62,7 @@ public class HardwareServiceImpl implements HardwareService {
 
     /**
      * 查询配件列表
+     * 
      * @param request 查询参数
      * @return 配件列表
      */
@@ -129,9 +142,9 @@ public class HardwareServiceImpl implements HardwareService {
                 resultPage.getSize());
     }
 
-
     /**
      * 查询配件详情
+     * 
      * @param id 配件ID
      * @return 配件详情
      */
@@ -139,11 +152,10 @@ public class HardwareServiceImpl implements HardwareService {
     public HardwareDetailVO getHardwareDetail(Long id) {
         // 构建查询条件包装器，查询指定ID的配件
         Hardware hardware = hardwareMapper.selectOne(
-            new LambdaQueryWrapper<Hardware>()
-                .eq(Hardware::getId, id)
-                .eq(Hardware::getIsDeleted, FieldConstant.NOT_DELETED)
-                .last("limit 1")
-        );
+                new LambdaQueryWrapper<Hardware>()
+                        .eq(Hardware::getId, id)
+                        .eq(Hardware::getIsDeleted, FieldConstant.NOT_DELETED)
+                        .last("limit 1"));
 
         if (hardware == null) {
             throw new CommonException(HardwareErrorCode.HARDWARE_NOT_FOUND);
@@ -151,11 +163,10 @@ public class HardwareServiceImpl implements HardwareService {
 
         // 查询配件分类
         HardwareCategory category = hardwareCategoryMapper.selectOne(
-            new LambdaQueryWrapper<HardwareCategory>()
-                .eq(HardwareCategory::getId, hardware.getCategoryId())
-                .eq(HardwareCategory::getIsDeleted, FieldConstant.NOT_DELETED)
-                .last("limit 1")
-        );
+                new LambdaQueryWrapper<HardwareCategory>()
+                        .eq(HardwareCategory::getId, hardware.getCategoryId())
+                        .eq(HardwareCategory::getIsDeleted, FieldConstant.NOT_DELETED)
+                        .last("limit 1"));
 
         String categoryName = category == null ? null : category.getName();
 
@@ -163,7 +174,106 @@ public class HardwareServiceImpl implements HardwareService {
     }
 
 
+    /**
+     * 对比配件
+     * @param request 对比参数
+     * @return 对比结果
+     */
+    @Override
+    public HardwareCompareVO compareHardware(HardwareCompareRequest request) {
+        // 校验对比参数是否为空
+        if (request == null || request.getHardwareIds() == null || request.getHardwareIds().isEmpty()) {
+            throw new CommonException(
+                    CommonErrorCode.REQUEST_PARAM_ERROR,
+                    MessageConstant.HARDWARE_COMPARE_ID_NOT_NULL);
+        }
 
+        // 获取对比配件ID列表, 过滤空值并去重
+        List<Long> hardwareIds = request.getHardwareIds()
+                .stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        // 校验对比配件ID数量是否在有效范围内
+        if (hardwareIds.size() < ValidationConstant.HARDWARE_COMPARE_SIZE_MIN
+                || hardwareIds.size() > ValidationConstant.HARDWARE_COMPARE_SIZE_MAX) {
+            throw new CommonException(
+                    CommonErrorCode.REQUEST_PARAM_ERROR,
+                    MessageConstant.HARDWARE_COMPARE_SIZE_LIMIT);
+        }
+
+        // 查询对比配件列表, 包含分类、品牌、价格、封面图片、规格差异化参数
+        List<Hardware> hardwareList = hardwareMapper.selectList(
+                new LambdaQueryWrapper<Hardware>()
+                        .select(
+                                Hardware::getId,
+                                Hardware::getCategoryId,
+                                Hardware::getName,
+                                Hardware::getBrand,
+                                Hardware::getPrice,
+                                Hardware::getCoverImage,
+                                Hardware::getSpecsJson)
+                        .in(Hardware::getId, hardwareIds)
+                        .eq(Hardware::getId, FieldConstant.NOT_DELETED));
+
+        // 校验查询结果是否与对比配件ID数量一致
+        // 如果查询结果为空或数量与对比配件ID数量不一致, 则抛出异常
+        if(hardwareList == null || hardwareList.size() != hardwareIds.size()) {
+            throw new CommonException(HardwareErrorCode.HARDWARE_NOT_FOUND);
+        }
+
+        // 将查询结果转换为 Map<Long, Hardware>
+        // 键为配件ID, 值为配件对象
+        Map<Long, Hardware> hardwareMap = hardwareList.stream()
+                .collect(Collectors.toMap(
+                    Hardware::getId,
+                    Function.identity()
+                ));
+
+        // 按对比配件ID顺序排序
+        List<Hardware> orderedHardwareList = hardwareIds.stream()
+                    .map(hardwareMap::get)
+                    .toList();
+
+        // 校验排序后的配件列表是否包含空值
+        // match为什么不直接填null: 因为查询结果中可能包含null值, 而null值不能直接比较
+        if(orderedHardwareList.stream().anyMatch(Objects::isNull)){
+            throw new CommonException(HardwareErrorCode.HARDWARE_NOT_FOUND);
+        }
+
+        Integer categoryId = orderedHardwareList.get(0).getCategoryId();
+        // 校验所有配件是否属于同一分类
+        boolean sameCategory = orderedHardwareList.stream()
+                .allMatch(hardware -> hardware.getCategoryId().equals(categoryId));
+
+        if (!sameCategory) {
+            throw new CommonException(HardwareErrorCode.HARDWARE_COMPARE_CATEGORY_NOT_SAME);
+        }
+
+        // 查询配件分类
+        HardwareCategory category = hardwareCategoryMapper.selectOne(
+            new LambdaQueryWrapper<HardwareCategory>()
+                    .eq(HardwareCategory::getId, categoryId)
+                    .eq(HardwareCategory::getIsDeleted, FieldConstant.NOT_DELETED)
+                    .last("limit 1")
+        );
+
+        // 获取分类名称
+        String categoryName = category == null ? null : category.getName();
+
+        // 转换为对比项VO列表
+        List<HardwareCompareItemVO> items = orderedHardwareList.stream()
+                .map(this::toCompareItemVO)
+                .toList();
+
+        return HardwareCompareVO.builder()
+                .categoryId(categoryId)
+                .categoryName(categoryName)
+                .items(items)
+                .fields(buildCompareFields(items))
+                .build();
+    }
 
     /**
      * 校验并归一化分页页码
@@ -177,6 +287,7 @@ public class HardwareServiceImpl implements HardwareService {
         }
         return pageNum;
     }
+
     /**
      * 校验并归一化分页每页数量
      * 
@@ -231,7 +342,7 @@ public class HardwareServiceImpl implements HardwareService {
 
     }
 
-     /**
+    /**
      * 解析配件差异化参数JSON字符串为 Map
      * 
      * @param specsJson 配件差异化参数JSON字符串
@@ -246,14 +357,40 @@ public class HardwareServiceImpl implements HardwareService {
         // 解析 JSON 字符串为 Map
         try {
             return objectMapper.readValue(
-                specsJson,
-                new TypeReference<Map<String, Object>>() {}
-            );
+                    specsJson,
+                    new TypeReference<Map<String, Object>>() {
+                    });
         } catch (JsonProcessingException e) {
             return Collections.emptyMap();
         }
     }
 
+    /**
+     * 构建对比字段列表
+     * 
+     * @param items 对比项列表
+     * @return 对比字段列表
+     */
+    private List<HardwareCompareFieldVO> buildCompareFields(List<HardwareCompareItemVO> items) {
+        // 构建对比字段列表, 从所有项中提取所有参数 key
+        Set<String> fieldKeys = new LinkedHashSet<>();
+
+        // 遍历所有项，提取所有参数 key
+        for (HardwareCompareItemVO item : items) {
+            if (item.getSpecs() != null && !item.getSpecs().isEmpty()) {
+                // 提取当前项的所有参数 key 并添加到对比字段列表中
+                fieldKeys.addAll(item.getSpecs().keySet());
+            }
+        }
+
+        return fieldKeys.stream()
+                .map(key -> HardwareCompareFieldVO.builder()
+                        .key(key)
+                        .label(key)
+                        .unit(null)
+                        .build())
+                .toList();
+    }
 
     /**
      * 将硬件实体转换为列表VO
@@ -275,11 +412,10 @@ public class HardwareServiceImpl implements HardwareService {
                 .build();
     }
 
-
     /**
      * 将硬件实体转换为详情VO
      * 
-     * @param hardware 硬件实体
+     * @param hardware     硬件实体
      * @param categoryName 分类名称
      * @return 详情VO
      */
@@ -300,6 +436,23 @@ public class HardwareServiceImpl implements HardwareService {
                 .liked(false)
                 .favorited(false)
                 .createTime(hardware.getCreateTime())
+                .build();
+    }
+
+    /**
+     * 将硬件实体转换为对比项VO
+     * 
+     * @param hardware 硬件实体
+     * @return 对比项VO
+     */
+    private HardwareCompareItemVO toCompareItemVO(Hardware hardware) {
+        return HardwareCompareItemVO.builder()
+                .id(String.valueOf(hardware.getId()))
+                .name(hardware.getName())
+                .brand(hardware.getBrand())
+                .price(hardware.getPrice())
+                .coverImage(hardware.getCoverImage())
+                .specs(parseSpecs(hardware.getSpecsJson()))
                 .build();
     }
 

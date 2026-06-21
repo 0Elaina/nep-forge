@@ -4,12 +4,16 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import com.nep.common.result.ApiResponse;
 import com.nep.common.result.PageResult;
+import com.nep.hardware.dto.HardwareCompareRequest;
 import com.nep.hardware.dto.HardwareQueryRequest;
 import com.nep.hardware.service.HardwareService;
+import com.nep.hardware.vo.HardwareCompareVO;
 import com.nep.hardware.vo.HardwareDetailVO;
 import com.nep.hardware.vo.HardwareListVO;
 
@@ -55,5 +59,19 @@ public class HardwareController {
     public ApiResponse<HardwareDetailVO> getHardwareDetail(@PathVariable Long id) {
         log.info("获取配件详情, 配件ID: {}", id);
         return ApiResponse.success(hardwareService.getHardwareDetail(id));
+    }
+
+    /**
+     * 多配件参数对比
+     * @param request 对比参数
+     * @return 对比结果
+     */
+    @Operation(summary = "多配件参数对比")
+    @PostMapping("/compare")
+    public ApiResponse<HardwareCompareVO> compareHardware(
+        @Valid @RequestBody HardwareCompareRequest request
+    ) {
+        log.info("多配件参数对比, 对比参数: {}", request);
+        return ApiResponse.success(hardwareService.compareHardware(request));
     }
 }

@@ -14,7 +14,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum HardwareErrorCode implements BaseErrorInfo {
     HARDWARE_NOT_FOUND(40200, 404, MessageConstant.HARDWARE_NOT_FOUND),
-    HARDWARE_CATEGORY_NOT_FOUND(40201, 404, MessageConstant.HARDWARE_CATEGORY_NOT_FOUND);
+    HARDWARE_CATEGORY_NOT_FOUND(40201, 404, MessageConstant.HARDWARE_CATEGORY_NOT_FOUND),
+    HARDWARE_COMPARE_CATEGORY_NOT_SAME(40202, 400, MessageConstant.HARDWARE_COMPARE_CATEGORY_NOT_SAME);
 
     private final Integer code;
     private final Integer httpStatus;

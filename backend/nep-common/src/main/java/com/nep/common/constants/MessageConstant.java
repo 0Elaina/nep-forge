@@ -63,6 +63,10 @@ public final class MessageConstant {
     public static final String HARDWARE_PAGE_SIZE_MAX_LIMIT = "配件每页条数不能超过 100";
     public static final String HARDWARE_MIN_PRICE_MIN_LIMIT = "配件最低价格不能低于 0";
     public static final String HARDWARE_MAX_PRICE_MIN_LIMIT = "配件最高价格不能低于 0";
+    public static final String HARDWARE_COMPARE_IDS_NOT_EMPTY = "请选择需要对比的配件";
+    public static final String HARDWARE_COMPARE_ID_NOT_NULL = "配件ID不能为空";
+    public static final String HARDWARE_COMPARE_SIZE_LIMIT = "对比配件数量必须在 2-5 个之间";
+    public static final String HARDWARE_COMPARE_CATEGORY_NOT_SAME = "当前仅支持同类配件对比";
 
     /* ===================== 文章模块 ===================== */
 

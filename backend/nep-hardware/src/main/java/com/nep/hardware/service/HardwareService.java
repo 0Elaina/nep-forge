@@ -1,7 +1,9 @@
 package com.nep.hardware.service;
 
 import com.nep.common.result.PageResult;
+import com.nep.hardware.dto.HardwareCompareRequest;
 import com.nep.hardware.dto.HardwareQueryRequest;
+import com.nep.hardware.vo.HardwareCompareVO;
 import com.nep.hardware.vo.HardwareDetailVO;
 import com.nep.hardware.vo.HardwareListVO;
 
@@ -23,4 +25,12 @@ public interface HardwareService {
      * @return 配件详情VO
      */
     HardwareDetailVO getHardwareDetail(Long id);
+
+
+    /**
+     * 对比配件
+     * @param request 对比参数
+     * @return 对比结果
+     */
+    HardwareCompareVO compareHardware(HardwareCompareRequest request);
 }
