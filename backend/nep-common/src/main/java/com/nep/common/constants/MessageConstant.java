@@ -24,6 +24,7 @@ public final class MessageConstant {
     public static final String TOO_MANY_REQUESTS = "请求过于频繁";
     public static final String SYSTEM_ERROR = "系统内部错误";
     public static final String NO_REQUEST_RESOURCE = "请求资源不存在";
+    public static final String PARAM_JSON_ERROR = "参数 JSON 格式错误";
 
     /* ===================== 用户模块 ===================== */
 
@@ -67,6 +68,17 @@ public final class MessageConstant {
     public static final String HARDWARE_COMPARE_ID_NOT_NULL = "配件ID不能为空";
     public static final String HARDWARE_COMPARE_SIZE_LIMIT = "对比配件数量必须在 2-5 个之间";
     public static final String HARDWARE_COMPARE_CATEGORY_NOT_SAME = "当前仅支持同类配件对比";
+    public static final String HARDWARE_CATEGORY_NOT_NULL = "配件分类不能为空";
+    public static final String HARDWARE_NAME_NOT_BLANK = "配件名称不能为空";
+    public static final String HARDWARE_NAME_LENGTH_MAX_LIMIT = "配件名称长度不能超过 100 个字符";
+    public static final String HARDWARE_BRAND_NAME_LENGTH_MAX_LIMIT = "品牌名称长度不能超过 50 个字符";
+    public static final String HARDWARE_PRICE_NOT_NULL = "配件价格不能为空";
+    public static final String HARDWARE_PRICE_MIN_LIMIT = "配件价格不能低于 0";
+    public static final String HARDWARE_SOURCE_NAME_LENGTH_MAX_LIMIT = "来源名称长度不能超过 100 个字符";
+    public static final String HARDWARE_SOURCE_URL_LENGTH_MAX_LIMIT = "来源URL长度不能超过 512 个字符";
+    public static final String HARDWARE_COVER_IMAGE_URL_LENGTH_MAX_LIMIT = "封面图片URL长度不能超过 512 个字符";
+    public static final String HARDWARE_ID_NOT_NULL = "配件ID不能为空";
+
 
     /* ===================== 文章模块 ===================== */
 
