@@ -38,6 +38,8 @@ target/
 build/
 .gradle/
 .mvn/wrapper/maven-wrapper.jar
+!backend/nep-build/src/main/java/com/nep/build/
+!backend/nep-build/src/main/java/com/nep/build/**
 
 # 编译文件
 *.class

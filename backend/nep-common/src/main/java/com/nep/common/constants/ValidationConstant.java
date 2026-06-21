@@ -11,6 +11,10 @@ package com.nep.common.constants;
  */
 public final class ValidationConstant {
     private ValidationConstant(){}
+    /*===================== 分页参数 ====================== */
+    public static final int PAGE_NUM_MIN = 1;
+    public static final int PAGE_SIZE_MIN = 1;
+    public static final int PAGE_SIZE_MAX = 100;
 
     /*===================== 用户模块 ====================== */
     public static final int USERNAME_MIN_LENGTH = 3;
@@ -24,9 +28,6 @@ public final class ValidationConstant {
     public static final int BIO_MAX_LENGTH = 255;
 
     /*===================== 配件模块 ====================== */
-    public static final int HARDWARE_PAGE_NUM_MIN = 1;
-    public static final int HARDWARE_PAGE_SIZE_MIN = 1;
-    public static final int HARDWARE_PAGE_SIZE_MAX = 100;
     public static final String HARDWARE_MIN_PRICE_MIN = "0.00";
     public static final String HARDWARE_MAX_PRICE_MIN = "0.00";
     public static final int HARDWARE_COMPARE_SIZE_MIN = 2;

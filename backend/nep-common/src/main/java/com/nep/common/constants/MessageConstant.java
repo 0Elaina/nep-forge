@@ -54,14 +54,12 @@ public final class MessageConstant {
     public static final String BUILD_NOT_FOUND = "装机单不存在";
     public static final String BUILD_FORBIDDEN = "无权访问该装机单";
     public static final String BUILD_HARDWARE_EXISTS = "装机单中已存在该配件";
+    public static final String BUILD_STATUS_INVALID = "装机单状态不合法";
 
     /* ===================== 配件模块 ===================== */
 
     public static final String HARDWARE_NOT_FOUND = "配件不存在";
     public static final String HARDWARE_CATEGORY_NOT_FOUND = "配件分类不存在";
-    public static final String HARDWARE_PAGE_NUM_MIN_LIMIT = "配件页码不能小于 1";
-    public static final String HARDWARE_PAGE_SIZE_MIN_LIMIT = "配件每页条数不能小于 1";
-    public static final String HARDWARE_PAGE_SIZE_MAX_LIMIT = "配件每页条数不能超过 100";
     public static final String HARDWARE_MIN_PRICE_MIN_LIMIT = "配件最低价格不能低于 0";
     public static final String HARDWARE_MAX_PRICE_MIN_LIMIT = "配件最高价格不能低于 0";
     public static final String HARDWARE_COMPARE_IDS_NOT_EMPTY = "请选择需要对比的配件";
@@ -100,6 +98,11 @@ public final class MessageConstant {
     /* ===================== API 响应 ===================== */
 
     public static final String API_SUCCESS = "success";
+
+    /* ===================== 分页参数 ===================== */
+    public static final String PAGE_NUM_MIN_LIMIT = "页码不能小于 1";
+    public static final String PAGE_SIZE_MIN_LIMIT = "每页条数不能小于 1";
+    public static final String PAGE_SIZE_MAX_LIMIT = "每页条数不能超过 100";
 
     /* ===================== 参数校验 & 异常处理 ===================== */
 

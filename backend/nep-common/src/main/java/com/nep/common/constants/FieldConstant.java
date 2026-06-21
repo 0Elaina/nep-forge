@@ -15,4 +15,11 @@ public final class FieldConstant {
 
     public static final int ENABLED = 1; // 已启用
     public static final int DISABLED = 0; // 已禁用
+
+    public static final int BUILD_STATUS_DRAFT = 0; // 草稿
+    public static final int BUILD_STATUS_NORMAL = 1; // 正常
+    public static final int BUILD_STATUS_OFFLINE = 2; // 下架
+
+    public static final int PUBLIC = 1; // 公开
+    public static final int PRIVATE = 0; // 私有
 }

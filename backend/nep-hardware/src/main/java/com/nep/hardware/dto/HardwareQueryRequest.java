@@ -28,8 +28,8 @@ public class HardwareQueryRequest implements Serializable {
      * 当前页码，从 1 开始。默认由调用方自行处理 null 时的默认值（通常为 1）。
      */
     @Min(
-        value = ValidationConstant.HARDWARE_PAGE_NUM_MIN,
-        message = MessageConstant.HARDWARE_PAGE_NUM_MIN_LIMIT
+        value = ValidationConstant.PAGE_NUM_MIN,
+        message = MessageConstant.PAGE_NUM_MIN_LIMIT
     )
     private Integer pageNum;
 
@@ -37,12 +37,12 @@ public class HardwareQueryRequest implements Serializable {
      * 每页记录数。允许范围 [1, 100]。
      */
     @Min(
-        value = ValidationConstant.HARDWARE_PAGE_SIZE_MIN,
-        message = MessageConstant.HARDWARE_PAGE_SIZE_MIN_LIMIT
+        value = ValidationConstant.PAGE_SIZE_MIN,
+        message = MessageConstant.PAGE_SIZE_MIN_LIMIT
     )
     @Max(
-        value = ValidationConstant.HARDWARE_PAGE_SIZE_MAX,
-        message = MessageConstant.HARDWARE_PAGE_SIZE_MAX_LIMIT
+        value = ValidationConstant.PAGE_SIZE_MAX,
+        message = MessageConstant.PAGE_SIZE_MAX_LIMIT
     )
     private Integer pageSize;
 
