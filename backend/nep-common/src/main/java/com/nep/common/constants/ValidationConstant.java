@@ -29,4 +29,6 @@ public final class ValidationConstant {
     public static final int HARDWARE_PAGE_SIZE_MAX = 100;
     public static final String HARDWARE_MIN_PRICE_MIN = "0.00";
     public static final String HARDWARE_MAX_PRICE_MIN = "0.00";
+    public static final int HARDWARE_COMPARE_SIZE_MIN = 2;
+    public static final int HARDWARE_COMPARE_SIZE_MAX = 5;
 }
