@@ -3,6 +3,7 @@ package com.nep.build.service;
 import com.nep.common.result.PageResult;
 import com.nep.build.dto.BuildCreateRequest;
 import com.nep.build.dto.BuildQueryRequest;
+import com.nep.build.dto.BuildUpdateRequest;
 import com.nep.build.vo.BuildListVO;
 
 /**
@@ -32,4 +33,14 @@ public interface BuildService {
      * @return 装机单ID
      */
     Long createBuild(Long currentUserId, BuildCreateRequest request);
+
+    /**
+     * 更新装机单基本信息
+     * 包括标题、描述、封面图片
+     * @param currentUserId 当前用户ID
+     * @param buildId 装机单ID
+     * @param request 更新请求
+     * @return 是否成功更新
+     */
+    Boolean updateBuildBasicInfo(Long currentUserId, Long buildId, BuildUpdateRequest request);
 }

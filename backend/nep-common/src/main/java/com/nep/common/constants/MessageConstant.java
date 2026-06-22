@@ -60,6 +60,7 @@ public final class MessageConstant {
     public static final String BUILD_DESCRIPTION_LENGTH_MAX_LIMIT = "装机单描述长度不能超过 255 个字符";
     public static final String BUILD_COVER_IMAGE_LENGTH_MAX_LIMIT = "装机单封面图片长度不能超过 512 个字符";
     public static final String BUILD_CREATE_FAILED = "创建装机单失败";
+    public static final String BUILD_UPDATE_FAILED = "更新装机单失败";
 
     /* ===================== 配件模块 ===================== */
 

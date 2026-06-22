@@ -2,6 +2,7 @@ package com.nep.build.service.impl;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.nep.build.dto.BuildCreateRequest;
 import com.nep.build.dto.BuildQueryRequest;
+import com.nep.build.dto.BuildUpdateRequest;
 import com.nep.build.entity.UserBuild;
 import com.nep.build.mapper.UserBuildMapper;
 
@@ -193,6 +195,54 @@ public class BuildServiceImpl implements BuildService {
         return userBuild.getId();
     }
 
+
+    /**
+     * 更新装机单基本信息
+     * 包括标题、描述、封面图片
+     * @param currentUserId 当前用户ID
+     * @param buildId 装机单ID
+     * @param request 更新请求
+     * @return 是否成功更新
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateBuildBasicInfo(Long currentUserId, Long buildId, BuildUpdateRequest request) {
+        if(currentUserId == null) {
+            throw new CommonException(CommonErrorCode.UNAUTHORIZED);
+        }
+
+        if(request == null || buildId == null) {
+            throw new CommonException(CommonErrorCode.REQUEST_PARAM_ERROR);
+        }
+
+        // 查询装机单是否存在
+        UserBuild userBuild = userBuildMapper.selectById(buildId);
+
+        if(userBuild == null || FieldConstant.DELETED == userBuild.getIsDeleted()) {
+            throw new CommonException(CommonErrorCode.NOT_FOUND, MessageConstant.BUILD_NOT_FOUND);
+        }
+
+        // 验证当前用户是否是装机单的创建者
+        if(!Objects.equals(currentUserId, userBuild.getUserId())) {
+            throw new CommonException(CommonErrorCode.FORBIDDEN, MessageConstant.BUILD_FORBIDDEN);
+        }
+
+        // 构建更新实体的原因:
+        // mybatis-plus配置的是严格填充, 不会覆盖已有的字段
+        // 直接修改原来的实体会导致填充更新时间失败
+        UserBuild updateBuild = new UserBuild();
+        updateBuild.setId(buildId);
+        updateBuild.setTitle(request.getTitle().trim());
+        updateBuild.setDescription(StringCommonUtils.trimToNull(request.getDescription()));
+        updateBuild.setCoverImage(StringCommonUtils.trimToNull(request.getCoverImage()));
+
+        int rows = userBuildMapper.updateById(updateBuild);
+        if(rows <= 0) {
+            throw new CommonException(CommonErrorCode.SYSTEM_ERROR, MessageConstant.BUILD_UPDATE_FAILED);
+        }
+
+        return true;
+    }
 
     /**
      * 验证装机单状态
