@@ -35,6 +35,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nep.build.dto.BuildCreateRequest;
 import com.nep.build.dto.BuildItemAddRequest;
+import com.nep.build.dto.BuildItemUpdateRequest;
 import com.nep.build.dto.BuildQueryRequest;
 import com.nep.build.dto.BuildUpdateRequest;
 import com.nep.build.entity.UserBuild;
@@ -331,6 +332,8 @@ public class BuildServiceImpl implements BuildService {
      * @param detailId 装机单详情ID
      * @return 是否删除成功
      */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean removeBuildItem(Long currentUserId, Long buildId, Long detailId) {
         if(currentUserId == null) {
             throw new CommonException(CommonErrorCode.UNAUTHORIZED);
@@ -367,6 +370,66 @@ public class BuildServiceImpl implements BuildService {
         return true;
     }
 
+    /**
+     * 更新装机单配件数量
+     * @param currentUserId 当前用户ID
+     * @param buildId 装机单ID
+     * @param detailId 装机单详情ID
+     * @param request 更新装机单配件数量请求
+     * @return 是否更新成功
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateBuildItemQuantity(
+        Long currentUserId,
+        Long buildId,
+        Long detailId,
+        BuildItemUpdateRequest request
+    ) {
+        if(currentUserId == null){
+            throw new CommonException(CommonErrorCode.UNAUTHORIZED);
+        }
+        if(buildId == null || detailId == null || request == null || request.getQuantity() == null) {
+            throw new CommonException(CommonErrorCode.REQUEST_PARAM_ERROR);
+        }
+
+        if(request.getQuantity() < 1) {
+            throw new CommonException(
+                CommonErrorCode.REQUEST_PARAM_ERROR,
+                MessageConstant.BUILD_HARDWARE_QUANTITY_MIN_LIMIT
+            );
+        }
+
+        // 查询装机单是否存在
+        UserBuild userBuild = getOwnedBuildOrThrow(currentUserId, buildId);
+
+        // 根据装机单详情ID和装机单ID查询装机单详情
+        UserBuildDetail detail = userBuildDetailMapper.selectOne(
+            new LambdaQueryWrapper<UserBuildDetail>()
+                    .eq(UserBuildDetail::getId, detailId)
+                    .eq(UserBuildDetail::getBuildId, userBuild.getId()) 
+        );
+
+        // 如果装机单详情不存在, 抛出装机单配件不存在异常
+        if(detail == null) {
+            throw new CommonException(CommonErrorCode.NOT_FOUND, MessageConstant.BUILD_HARDWARE_NOT_FOUND);
+        }
+
+        // 构建装机单详情更新实体
+        UserBuildDetail updateDetail = new UserBuildDetail();
+        updateDetail.setId(detailId);
+        updateDetail.setQuantity(request.getQuantity());
+
+        // 更新装机单详情
+        int rows = userBuildDetailMapper.updateById(updateDetail);
+        if(rows <= 0){
+            throw new CommonException(CommonErrorCode.SYSTEM_ERROR, MessageConstant.BUILD_UPDATE_FAILED);
+        }
+
+        // 计算装机单总价格和总功率
+        recalculateBuildTotal(userBuild.getId());
+        return true;
+    }
 
     /**
      * 验证装机单状态

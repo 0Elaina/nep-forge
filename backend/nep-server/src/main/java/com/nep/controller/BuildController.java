@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.nep.build.dto.BuildCreateRequest;
 import com.nep.build.dto.BuildItemAddRequest;
+import com.nep.build.dto.BuildItemUpdateRequest;
 import com.nep.build.dto.BuildQueryRequest;
 import com.nep.build.dto.BuildUpdateRequest;
 import com.nep.build.service.BuildService;
@@ -139,5 +140,24 @@ public class BuildController {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         log.info("删除配件接口: userId={}, buildId={}, detailId={}", currentUserId, id, detailId);
         return ApiResponse.success(buildService.removeBuildItem(currentUserId, id, detailId));
+    }
+
+    /**
+     * 更新装机单配件数量接口
+     * @param id 装机单ID
+     * @param detailId 配件详情ID
+     * @param request 更新请求参数
+     * @return 更新结果
+     */
+    @Operation(summary = "更新装机单配件数量接口")
+    @PutMapping("/{id}/items/{detailId}")
+    public ApiResponse<Boolean> updateBuildItemQuantity(
+        @PathVariable Long id,
+        @PathVariable Long detailId,
+        @Valid @RequestBody BuildItemUpdateRequest request
+    ) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        log.info("更新装机单配件数量接口: userId={}, buildId={}, detailId={}, request={}", currentUserId, id, detailId, request);
+        return ApiResponse.success(buildService.updateBuildItemQuantity(currentUserId, id, detailId, request));
     }
 }
