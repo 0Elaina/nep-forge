@@ -4,13 +4,16 @@ import java.util.Map;
 
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nep.build.dto.BuildCreateRequest;
 import com.nep.build.dto.BuildQueryRequest;
+import com.nep.build.dto.BuildUpdateRequest;
 import com.nep.build.service.BuildService;
 import com.nep.build.vo.BuildListVO;
 import com.nep.common.result.ApiResponse;
@@ -80,5 +83,23 @@ public class BuildController {
         Long id = buildService.createBuild(currentUserId, request);
         log.info("创建装机单: userId={}, id={}", currentUserId, id);
         return ApiResponse.success(Map.of("id", String.valueOf(id)));
+    }
+
+    /**
+     * 更新装机单基础信息
+     *
+     * @param id 装机单ID
+     * @param request 更新请求参数
+     * @return 更新结果
+     */
+    @Operation(summary = "更新装机单基础信息")
+    @PutMapping("/{id}")
+    public ApiResponse<Boolean> updateBuildBasicInfo(
+        @PathVariable Long id,
+        @Valid @RequestBody BuildUpdateRequest request
+    ) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        log.info("更新装机单基础信息: userId={}, buildId={}", currentUserId, id);
+        return ApiResponse.success(buildService.updateBuildBasicInfo(currentUserId, id, request));
     }
 }
