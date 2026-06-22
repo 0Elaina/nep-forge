@@ -1,10 +1,15 @@
 package com.nep.controller;
 
+import java.util.Map;
+
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nep.build.dto.BuildCreateRequest;
 import com.nep.build.dto.BuildQueryRequest;
 import com.nep.build.service.BuildService;
 import com.nep.build.vo.BuildListVO;
@@ -58,5 +63,22 @@ public class BuildController {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         log.info("查看当前用户的装机单列表: id={}", currentUserId);
         return ApiResponse.success(buildService.listMyBuilds(currentUserId, request));
+    }
+
+    /**
+     * 创建装机单
+     *
+     * @param request 创建请求参数
+     * @return 创建结果
+     */
+    @Operation(summary = "创建装机单")
+    @PostMapping
+    public ApiResponse<Map<String, String>> createBuild(
+        @Valid @RequestBody BuildCreateRequest request
+    ) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        Long id = buildService.createBuild(currentUserId, request);
+        log.info("创建装机单: userId={}, id={}", currentUserId, id);
+        return ApiResponse.success(Map.of("id", String.valueOf(id)));
     }
 }
