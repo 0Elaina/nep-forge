@@ -2,6 +2,7 @@ package com.nep.build.service;
 
 import com.nep.common.result.PageResult;
 import com.nep.build.dto.BuildCreateRequest;
+import com.nep.build.dto.BuildItemAddRequest;
 import com.nep.build.dto.BuildQueryRequest;
 import com.nep.build.dto.BuildUpdateRequest;
 import com.nep.build.vo.BuildListVO;
@@ -43,4 +44,23 @@ public interface BuildService {
      * @return 是否成功更新
      */
     Boolean updateBuildBasicInfo(Long currentUserId, Long buildId, BuildUpdateRequest request);
+
+
+    /**
+     * 添加装机单配件
+     * @param currentUserId 当前用户ID
+     * @param buildId 装机单ID
+     * @param request 添加请求
+     * @return 装机单详情ID
+     */
+    Long addBuildItem(Long currentUserId, Long buildId, BuildItemAddRequest request);
+
+    /**
+     * 删除装机单配件
+     * @param currentUserId 当前用户ID
+     * @param buildId 装机单ID
+     * @param detailId 装机单详情ID
+     * @return 是否删除成功
+     */
+    Boolean removeBuildItem(Long currentUserId, Long buildId, Long detailId);
 }

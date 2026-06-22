@@ -25,6 +25,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.nep</groupId>
+            <artifactId>nep-hardware</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
         </dependency>

@@ -61,6 +61,12 @@ public final class MessageConstant {
     public static final String BUILD_COVER_IMAGE_LENGTH_MAX_LIMIT = "装机单封面图片长度不能超过 512 个字符";
     public static final String BUILD_CREATE_FAILED = "创建装机单失败";
     public static final String BUILD_UPDATE_FAILED = "更新装机单失败";
+    public static final String BUILD_HARDWARE_QUANTITY_NOT_NULL = "配件数量不能为空";
+    public static final String BUILD_HARDWARE_QUANTITY_MIN_LIMIT = "配件数量不能小于 1";
+    public static final String BUILD_TOTAL_DATA_UPDATE_FAILED = "更新装机单总价格和总功率失败";
+    public static final String BUILD_HARDWARE_ADD_FAILED = "添加装机单配件失败";
+    public static final String BUILD_HARDWARE_REMOVE_FAILED = "删除装机单配件失败";
+    public static final String BUILD_HARDWARE_NOT_FOUND = "装机单配件不存在";
 
     /* ===================== 配件模块 ===================== */
 
