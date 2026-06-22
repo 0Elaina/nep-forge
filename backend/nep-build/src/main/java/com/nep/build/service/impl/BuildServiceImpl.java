@@ -1,9 +1,11 @@
 package com.nep.build.service.impl;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -13,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.nep.build.service.BuildService;
+import com.nep.build.vo.BuildDetailItemVO;
+import com.nep.build.vo.BuildDetailVO;
 import com.nep.build.vo.BuildListVO;
 import com.nep.common.constants.FieldConstant;
 import com.nep.common.constants.MessageConstant;
@@ -25,12 +29,15 @@ import com.nep.common.result.PageResult;
 import com.nep.common.util.PageQueryUtils;
 import com.nep.common.util.StringCommonUtils;
 import com.nep.hardware.entity.Hardware;
+import com.nep.hardware.entity.HardwareCategory;
+import com.nep.hardware.mapper.HardwareCategoryMapper;
 import com.nep.hardware.mapper.HardwareMapper;
 
 import lombok.RequiredArgsConstructor;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nep.build.dto.BuildCreateRequest;
@@ -59,6 +66,7 @@ public class BuildServiceImpl implements BuildService {
     private final UserBuildDetailMapper userBuildDetailMapper;
     private final ObjectMapper objectMapper;
     private final HardwareMapper hardwareMapper;
+    private final HardwareCategoryMapper hardwareCategoryMapper;
 
     /**
      * 查询公开装机单列表
@@ -127,7 +135,7 @@ public class BuildServiceImpl implements BuildService {
      */
     @Override
     public PageResult<BuildListVO> listMyBuilds(Long currentUserId, BuildQueryRequest request) {
-        if(currentUserId == null){
+        if (currentUserId == null) {
             throw new CommonException(CommonErrorCode.UNAUTHORIZED);
         }
 
@@ -149,15 +157,14 @@ public class BuildServiceImpl implements BuildService {
                 UserBuild::getStatus,
                 UserBuild::getCoverImage,
                 UserBuild::getCreateTime,
-                UserBuild::getUpdateTime
-        );
+                UserBuild::getUpdateTime);
 
         wrapper
                 .eq(UserBuild::getIsDeleted, FieldConstant.NOT_DELETED)
                 .eq(UserBuild::getUserId, currentUserId);
 
         // 条件查询: 根据状态查询
-        if(query.getStatus() != null) {
+        if (query.getStatus() != null) {
             validateBuildStatus(query.getStatus());
             wrapper.eq(UserBuild::getStatus, query.getStatus());
         }
@@ -178,13 +185,12 @@ public class BuildServiceImpl implements BuildService {
                 records,
                 resultPage.getTotal(),
                 resultPage.getCurrent(),
-                resultPage.getSize()
-        );
+                resultPage.getSize());
     }
-
 
     /**
      * 创建装机单
+     * 
      * @param currentUserId 当前用户ID
      * @param request       创建请求
      * @return 装机单ID
@@ -192,11 +198,11 @@ public class BuildServiceImpl implements BuildService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createBuild(Long currentUserId, BuildCreateRequest request) {
-        if(currentUserId == null) {
+        if (currentUserId == null) {
             throw new CommonException(CommonErrorCode.UNAUTHORIZED);
         }
 
-        if(request == null) {
+        if (request == null) {
             throw new CommonException(CommonErrorCode.REQUEST_PARAM_ERROR);
         }
 
@@ -207,42 +213,42 @@ public class BuildServiceImpl implements BuildService {
 
         // 插入装机单
         int rows = userBuildMapper.insert(userBuild);
-        if(rows <= 0 || userBuild.getId() == null) {
+        if (rows <= 0 || userBuild.getId() == null) {
             throw new CommonException(CommonErrorCode.SYSTEM_ERROR, MessageConstant.BUILD_CREATE_FAILED);
         }
 
         return userBuild.getId();
     }
 
-
     /**
      * 更新装机单基本信息
      * 包括标题、描述、封面图片
+     * 
      * @param currentUserId 当前用户ID
-     * @param buildId 装机单ID
-     * @param request 更新请求
+     * @param buildId       装机单ID
+     * @param request       更新请求
      * @return 是否成功更新
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateBuildBasicInfo(Long currentUserId, Long buildId, BuildUpdateRequest request) {
-        if(currentUserId == null) {
+        if (currentUserId == null) {
             throw new CommonException(CommonErrorCode.UNAUTHORIZED);
         }
 
-        if(request == null || buildId == null) {
+        if (request == null || buildId == null) {
             throw new CommonException(CommonErrorCode.REQUEST_PARAM_ERROR);
         }
 
         // 查询装机单是否存在
         UserBuild userBuild = userBuildMapper.selectById(buildId);
 
-        if(userBuild == null || FieldConstant.DELETED == userBuild.getIsDeleted()) {
+        if (userBuild == null || FieldConstant.DELETED == userBuild.getIsDeleted()) {
             throw new CommonException(CommonErrorCode.NOT_FOUND, MessageConstant.BUILD_NOT_FOUND);
         }
 
         // 验证当前用户是否是装机单的创建者
-        if(!Objects.equals(currentUserId, userBuild.getUserId())) {
+        if (!Objects.equals(currentUserId, userBuild.getUserId())) {
             throw new CommonException(CommonErrorCode.FORBIDDEN, MessageConstant.BUILD_FORBIDDEN);
         }
 
@@ -256,33 +262,35 @@ public class BuildServiceImpl implements BuildService {
         updateBuild.setCoverImage(StringCommonUtils.trimToNull(request.getCoverImage()));
 
         int rows = userBuildMapper.updateById(updateBuild);
-        if(rows <= 0) {
+        if (rows <= 0) {
             throw new CommonException(CommonErrorCode.SYSTEM_ERROR, MessageConstant.BUILD_UPDATE_FAILED);
         }
 
         return true;
     }
 
-     /**
-      * 添加装机单配件
-      * @param currentUserId 当前用户ID
-      * @param buildId 装机单ID
-      * @param request 添加请求
-      * @return 装机单详情ID
-      */
+    /**
+     * 添加装机单配件
+     * 
+     * @param currentUserId 当前用户ID
+     * @param buildId       装机单ID
+     * @param request       添加请求
+     * @return 装机单详情ID
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long addBuildItem(Long currentUserId, Long buildId, BuildItemAddRequest request) {
-        if(currentUserId == null) {
+        if (currentUserId == null) {
             throw new CommonException(CommonErrorCode.UNAUTHORIZED);
         }
 
-        if(buildId == null || request == null || request.getHardwareId() == null || request.getQuantity() == null) {
+        if (buildId == null || request == null || request.getHardwareId() == null || request.getQuantity() == null) {
             throw new CommonException(CommonErrorCode.REQUEST_PARAM_ERROR);
         }
 
-        if(request.getQuantity() < 1) {
-            throw new CommonException(CommonErrorCode.REQUEST_PARAM_ERROR, MessageConstant.BUILD_HARDWARE_QUANTITY_MIN_LIMIT);
+        if (request.getQuantity() < 1) {
+            throw new CommonException(CommonErrorCode.REQUEST_PARAM_ERROR,
+                    MessageConstant.BUILD_HARDWARE_QUANTITY_MIN_LIMIT);
         }
 
         // 查询装机单是否存在
@@ -291,19 +299,18 @@ public class BuildServiceImpl implements BuildService {
         // 根据硬件ID查询硬件
         Hardware hardware = hardwareMapper.selectById(request.getHardwareId());
         // 如果硬件不存在或已被删除, 抛出硬件不存在异常
-        if(hardware == null || FieldConstant.DELETED == hardware.getIsDeleted()) {
+        if (hardware == null || FieldConstant.DELETED == hardware.getIsDeleted()) {
             throw new CommonException(HardwareErrorCode.HARDWARE_NOT_FOUND);
         }
 
         // 检查是否已存在相同硬件的装机单详情
         Long existsCount = userBuildDetailMapper.selectCount(
-            new LambdaQueryWrapper<UserBuildDetail>()
-                    .eq(UserBuildDetail::getBuildId, userBuild.getId())
-                    .eq(UserBuildDetail::getHardwareId, request.getHardwareId())
-        );
+                new LambdaQueryWrapper<UserBuildDetail>()
+                        .eq(UserBuildDetail::getBuildId, userBuild.getId())
+                        .eq(UserBuildDetail::getHardwareId, request.getHardwareId()));
 
         // 如果已存在相同硬件的装机单详情, 抛出装机单配件已存在异常
-        if(existsCount > 0) {
+        if (existsCount > 0) {
             throw new CommonException(BuildErrorCode.BUILD_HARDWARE_EXISTS);
         }
 
@@ -327,18 +334,19 @@ public class BuildServiceImpl implements BuildService {
 
     /**
      * 删除装机单配件
+     * 
      * @param currentUserId 当前用户ID
-     * @param buildId 装机单ID
-     * @param detailId 装机单详情ID
+     * @param buildId       装机单ID
+     * @param detailId      装机单详情ID
      * @return 是否删除成功
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean removeBuildItem(Long currentUserId, Long buildId, Long detailId) {
-        if(currentUserId == null) {
+        if (currentUserId == null) {
             throw new CommonException(CommonErrorCode.UNAUTHORIZED);
         }
-        if(buildId == null || detailId == null) {
+        if (buildId == null || detailId == null) {
             throw new CommonException(CommonErrorCode.REQUEST_PARAM_ERROR);
         }
 
@@ -347,19 +355,18 @@ public class BuildServiceImpl implements BuildService {
 
         // 根据装机单详情ID和装机单ID查询装机单详情
         UserBuildDetail detail = userBuildDetailMapper.selectOne(
-            new LambdaQueryWrapper<UserBuildDetail>()
-                    .eq(UserBuildDetail::getId, detailId)
-                    .eq(UserBuildDetail::getBuildId, userBuild.getId())
-        );
+                new LambdaQueryWrapper<UserBuildDetail>()
+                        .eq(UserBuildDetail::getId, detailId)
+                        .eq(UserBuildDetail::getBuildId, userBuild.getId()));
 
         // 如果装机单详情不存在, 抛出装机单配件不存在异常
-        if(detail == null) {
+        if (detail == null) {
             throw new CommonException(CommonErrorCode.NOT_FOUND, MessageConstant.BUILD_HARDWARE_NOT_FOUND);
         }
 
         int rows = userBuildDetailMapper.deleteById(detailId);
         // 如果删除失败, 抛出删除失败异常
-        if(rows <= 0) {
+        if (rows <= 0) {
             throw new CommonException(CommonErrorCode.SYSTEM_ERROR, MessageConstant.BUILD_HARDWARE_REMOVE_FAILED);
         }
 
@@ -372,32 +379,31 @@ public class BuildServiceImpl implements BuildService {
 
     /**
      * 更新装机单配件数量
+     * 
      * @param currentUserId 当前用户ID
-     * @param buildId 装机单ID
-     * @param detailId 装机单详情ID
-     * @param request 更新装机单配件数量请求
+     * @param buildId       装机单ID
+     * @param detailId      装机单详情ID
+     * @param request       更新装机单配件数量请求
      * @return 是否更新成功
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateBuildItemQuantity(
-        Long currentUserId,
-        Long buildId,
-        Long detailId,
-        BuildItemUpdateRequest request
-    ) {
-        if(currentUserId == null){
+            Long currentUserId,
+            Long buildId,
+            Long detailId,
+            BuildItemUpdateRequest request) {
+        if (currentUserId == null) {
             throw new CommonException(CommonErrorCode.UNAUTHORIZED);
         }
-        if(buildId == null || detailId == null || request == null || request.getQuantity() == null) {
+        if (buildId == null || detailId == null || request == null || request.getQuantity() == null) {
             throw new CommonException(CommonErrorCode.REQUEST_PARAM_ERROR);
         }
 
-        if(request.getQuantity() < 1) {
+        if (request.getQuantity() < 1) {
             throw new CommonException(
-                CommonErrorCode.REQUEST_PARAM_ERROR,
-                MessageConstant.BUILD_HARDWARE_QUANTITY_MIN_LIMIT
-            );
+                    CommonErrorCode.REQUEST_PARAM_ERROR,
+                    MessageConstant.BUILD_HARDWARE_QUANTITY_MIN_LIMIT);
         }
 
         // 查询装机单是否存在
@@ -405,13 +411,12 @@ public class BuildServiceImpl implements BuildService {
 
         // 根据装机单详情ID和装机单ID查询装机单详情
         UserBuildDetail detail = userBuildDetailMapper.selectOne(
-            new LambdaQueryWrapper<UserBuildDetail>()
-                    .eq(UserBuildDetail::getId, detailId)
-                    .eq(UserBuildDetail::getBuildId, userBuild.getId()) 
-        );
+                new LambdaQueryWrapper<UserBuildDetail>()
+                        .eq(UserBuildDetail::getId, detailId)
+                        .eq(UserBuildDetail::getBuildId, userBuild.getId()));
 
         // 如果装机单详情不存在, 抛出装机单配件不存在异常
-        if(detail == null) {
+        if (detail == null) {
             throw new CommonException(CommonErrorCode.NOT_FOUND, MessageConstant.BUILD_HARDWARE_NOT_FOUND);
         }
 
@@ -422,13 +427,123 @@ public class BuildServiceImpl implements BuildService {
 
         // 更新装机单详情
         int rows = userBuildDetailMapper.updateById(updateDetail);
-        if(rows <= 0){
+        if (rows <= 0) {
             throw new CommonException(CommonErrorCode.SYSTEM_ERROR, MessageConstant.BUILD_UPDATE_FAILED);
         }
 
         // 计算装机单总价格和总功率
         recalculateBuildTotal(userBuild.getId());
         return true;
+    }
+
+    /**
+     * 查询装机单详情
+     * 
+     * @param currentUserId 当前用户ID
+     * @param buildId       装机单ID
+     * @return 装机单详情VO
+     */
+    @Override
+    public BuildDetailVO getBuildDetail(Long currentUserId, Long buildId) {
+        // 根据装机单ID查询装机单实体
+        UserBuild build = userBuildMapper.selectById(buildId);
+
+        // 如果装机单不存在, 抛出装机单不存在异常
+        if(build == null || FieldConstant.DELETED == build.getIsDeleted()) {
+            throw new CommonException(BuildErrorCode.BUILD_NOT_FOUND);
+        }
+
+        // 检验当前用户是否是装机单的创建者
+        boolean owner = currentUserId != null && currentUserId.equals(build.getUserId());
+        // 检验装机单是否公开可见
+        boolean publicVisible = FieldConstant.PUBLIC == build.getIsPublic()
+                && FieldConstant.BUILD_STATUS_NORMAL == build.getStatus();
+
+        // 如果当前用户不是装机单的创建者, 且装机单不是公开可见, 抛出装机单权限不足异常
+        if(!owner && !publicVisible) {
+            throw new CommonException(BuildErrorCode.BUILD_FORBIDDEN);
+        }
+
+        // 查询装机单详情
+        List<UserBuildDetail> details = userBuildDetailMapper.selectList(
+            new LambdaQueryWrapper<UserBuildDetail>()
+                    .eq(UserBuildDetail::getBuildId, buildId)
+                    .orderByAsc(UserBuildDetail::getCreateTime)
+        );
+
+        // TODO: 检验当前用户是否点赞或收藏了装机单
+        Boolean liked = false;
+        Boolean favorited = false;
+
+        // 如果装机单详情为空, 则返回空列表
+        if(details == null || details.isEmpty()) {
+            return toDetailVO(build, Collections.emptyList(), liked, favorited);
+        }
+
+        // 查询所有硬件ID
+        // 使用set去重, 避免重复查询硬件
+        Set<Long> hardwareIds = details.stream()
+                .map(UserBuildDetail::getHardwareId)
+                .collect(Collectors.toSet());
+
+        // 查询所有硬件实体
+        List<Hardware> hardwareList = hardwareMapper.selectList(
+                    new LambdaQueryWrapper<Hardware>()
+                            .in(Hardware::getId, hardwareIds)
+                            .eq(Hardware::getIsDeleted, FieldConstant.NOT_DELETED)  
+        );
+
+        // 构建硬件映射表
+        Map<Long, Hardware> hardwareMap = hardwareList.stream()
+                .collect(Collectors.toMap(Hardware::getId, item -> item));
+
+        // 查询所有硬件分类ID
+        Set<Integer> categoryIds = hardwareList.stream()
+                .map(Hardware::getCategoryId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        // 初始化硬件分类映射表
+        Map<Integer, String> categoryNameMap = Collections.emptyMap();
+
+        // 查询所有硬件分类实体
+        if(categoryIds != null && !categoryIds.isEmpty()) {
+            List<HardwareCategory> categories = hardwareCategoryMapper.selectList(
+                new LambdaQueryWrapper<HardwareCategory>()
+                        .in(HardwareCategory::getId, categoryIds)
+                        .eq(HardwareCategory::getIsDeleted, FieldConstant.NOT_DELETED)
+            );
+
+        // 构建硬件分类映射表
+        // 如果有重复分类ID, 则取第一个分类名称
+        // 如果有重复分类名称, 则取第一个分类ID
+        categoryNameMap = categories.stream()
+                .collect(Collectors.toMap(
+                    HardwareCategory::getId,
+                    HardwareCategory::getName,
+                    (oldValue, newValue) -> oldValue
+                ));
+        }
+        
+        // 创建一个 effectively final 的引用，供 lambda 内部使用
+        // （categoryNameMap 在后续代码中可能被重新赋值，lambda 要求捕获的变量必须不可变）
+        Map<Integer, String> finalCategoryNameMap = categoryNameMap;
+
+        // 将配件详情列表转换为 VO 列表
+        List<BuildDetailItemVO> items = details.stream()
+                // step 1: 根据每个 detail 的 hardwareId 查找对应的硬件实体
+                .map(detail -> {
+                    Hardware hardware = hardwareMap.get(detail.getHardwareId());
+                    // 硬件已不存在（可能被删除了），跳过该记录
+                    if(hardware == null) return null;
+                    return toDetailItemVO(detail, hardware, finalCategoryNameMap);
+                })
+                // step 2: 过滤掉跳过的 null 记录
+                .filter(Objects::nonNull)
+                // step 3: 收集为不可变列表
+                .toList();
+
+        return toDetailVO(build, items, liked, favorited);
     }
 
     /**
@@ -479,45 +594,44 @@ public class BuildServiceImpl implements BuildService {
         wrapper.orderByDesc(UserBuild::getCreateTime);
     }
 
-     /**
-      * 获取装机单实体, 并验证当前用户是否是装机单的创建者
-      * 
-      * @param currentUserId 当前用户ID
-      * @param buildId       装机单ID
-      * @return 用户装机单实体
-      */
+    /**
+     * 获取装机单实体, 并验证当前用户是否是装机单的创建者
+     * 
+     * @param currentUserId 当前用户ID
+     * @param buildId       装机单ID
+     * @return 用户装机单实体
+     */
     private UserBuild getOwnedBuildOrThrow(Long currentUserId, Long buildId) {
         UserBuild userBuild = userBuildMapper.selectById(buildId);
 
-        if(userBuild == null || FieldConstant.DELETED == userBuild.getIsDeleted()) {
+        if (userBuild == null || FieldConstant.DELETED == userBuild.getIsDeleted()) {
             throw new CommonException(BuildErrorCode.BUILD_NOT_FOUND);
         }
 
-        if(!Objects.equals(userBuild.getUserId(), currentUserId)) {
+        if (!Objects.equals(userBuild.getUserId(), currentUserId)) {
             throw new CommonException(BuildErrorCode.BUILD_FORBIDDEN);
         }
 
         return userBuild;
     }
 
-
     /**
      * 重新计算装机单总价格和总功率
+     * 
      * @param buildId 装机单ID
      */
     private void recalculateBuildTotal(Long buildId) {
         // 查询所有配件详情
         List<UserBuildDetail> details = userBuildDetailMapper.selectList(
-            new LambdaQueryWrapper<UserBuildDetail>()
-                    .eq(UserBuildDetail::getBuildId, buildId)  
-        );
+                new LambdaQueryWrapper<UserBuildDetail>()
+                        .eq(UserBuildDetail::getBuildId, buildId));
 
         // 初始化总价格和总功率为0
         BigDecimal totalPrice = BigDecimal.ZERO;
         BigDecimal totalPower = BigDecimal.ZERO;
 
         // 如果没有配件详情, 则直接更新装机单总价格和总功率为0
-        if(details == null || details.isEmpty()) {
+        if (details == null || details.isEmpty()) {
             updateBuildTotal(buildId, totalPrice, totalPower);
             return;
         }
@@ -530,34 +644,33 @@ public class BuildServiceImpl implements BuildService {
                 .toList();
 
         // 查询没有硬件ID, 则直接更新装机单总价格和总功率为0
-        if(hardwareIds == null || hardwareIds.isEmpty()) {
+        if (hardwareIds == null || hardwareIds.isEmpty()) {
             updateBuildTotal(buildId, totalPrice, totalPower);
             return;
         }
 
         // 查询所有的配件实体
         List<Hardware> hardwareList = hardwareMapper.selectList(
-            new LambdaQueryWrapper<Hardware>()
-                    .in(Hardware::getId, hardwareIds)
-                    .eq(Hardware::getIsDeleted, FieldConstant.NOT_DELETED) 
-        );
+                new LambdaQueryWrapper<Hardware>()
+                        .in(Hardware::getId, hardwareIds)
+                        .eq(Hardware::getIsDeleted, FieldConstant.NOT_DELETED));
 
         // 构建硬件实体映射表
         Map<Long, Hardware> hardwareMap = hardwareList.stream()
                 .collect(Collectors.toMap(Hardware::getId, hardware -> hardware));
 
-        for(UserBuildDetail detail : details) {
+        for (UserBuildDetail detail : details) {
             // 根据 hardwareMap 映射硬件实体
             Hardware hardware = hardwareMap.get(detail.getHardwareId());
 
             // 如果硬件实体不存在或已删除, 则跳过当前配件详情
-            if(hardware == null || FieldConstant.DELETED == hardware.getIsDeleted()) continue;
+            if (hardware == null || FieldConstant.DELETED == hardware.getIsDeleted())
+                continue;
 
             // 获取当前配件的购买数量
             BigDecimal quantity = BigDecimal.valueOf(detail.getQuantity());
             // 获取当前配件的单价, 如果为null, 则默认0
             BigDecimal price = hardware.getPrice() == null ? BigDecimal.ZERO : hardware.getPrice();
-
 
             // 累计当前配件的价格：单价 × 数量，累加到总价
             // multiply: BigDecimal 的乘法方法，返回 price * quantity 的结果（BigDecimal 类型）
@@ -581,17 +694,20 @@ public class BuildServiceImpl implements BuildService {
      */
     private BigDecimal extractTdp(String specsJson) {
         // 如果规格JSON为空, 则直接返回0
-        if(!StringUtils.hasText(specsJson)) return BigDecimal.ZERO;
+        if (!StringUtils.hasText(specsJson))
+            return BigDecimal.ZERO;
 
         try {
             JsonNode root = objectMapper.readTree(specsJson);
             JsonNode tdpNode = root.get(TDP);
 
             // 如果 TDP 字段不存在或为null, 则返回0
-            if(tdpNode == null || tdpNode.isNull()) return BigDecimal.ZERO;
+            if (tdpNode == null || tdpNode.isNull())
+                return BigDecimal.ZERO;
 
             // 如果 TDP 字段是数字, 则直接返回
-            if(tdpNode.isNumber()) return tdpNode.decimalValue();
+            if (tdpNode.isNumber())
+                return tdpNode.decimalValue();
 
             // 如果 TDP 字段是字符串, 则尝试解析为数字
             String text = tdpNode.asText();
@@ -599,7 +715,7 @@ public class BuildServiceImpl implements BuildService {
             Matcher matcher = Pattern.compile(TDP_PATTERN).matcher(text);
 
             // 如果匹配成功, 则返回匹配到的数字部分
-            if(matcher.find()) {
+            if (matcher.find()) {
                 // 提取匹配到的数字部分
                 return new BigDecimal(matcher.group(1));
             }
@@ -612,9 +728,29 @@ public class BuildServiceImpl implements BuildService {
     }
 
     /**
+     * 解析硬件规格JSON字符串
+     * 
+     * @param specsJson 硬件规格JSON字符串
+     * @return 解析后的对象
+     */
+    private Object parseSpecs(String specsJson) {
+        // 如果规格JSON为空, 则直接返回null
+        if (!StringUtils.hasText(specsJson))
+            return null;
+
+        try {
+            // 尝试解析JSON字符串为对象
+            return objectMapper.readValue(specsJson, Object.class);
+        } catch (JsonProcessingException e) {
+            // 如果解析过程中发生异常, 则返回null
+            return null;
+        }
+    }
+
+    /**
      * 更新装机单总价格和总功率
      * 
-     * @param buildId 装机单ID
+     * @param buildId    装机单ID
      * @param totalPrice 总价格
      * @param totalPower 总功率
      */
@@ -626,7 +762,7 @@ public class BuildServiceImpl implements BuildService {
 
         int rows = userBuildMapper.updateById(updateBuild);
 
-        if(rows <= 0) {
+        if (rows <= 0) {
             throw new CommonException(CommonErrorCode.SYSTEM_ERROR, MessageConstant.BUILD_TOTAL_DATA_UPDATE_FAILED);
         }
     }
@@ -651,9 +787,9 @@ public class BuildServiceImpl implements BuildService {
                 .build();
     }
 
-
     /**
      * 根据创建请求填充装机单
+     * 
      * @param request 创建请求参数
      * @param build   用户装机单实体
      * @return 用户装机单实体
@@ -662,10 +798,9 @@ public class BuildServiceImpl implements BuildService {
         build.setTitle(request.getTitle().trim());
         build.setDescription(StringCommonUtils.trimToNull(request.getDescription()));
         build.setIsPublic(
-            Boolean.TRUE.equals(request.getIsPublic())
-            ? FieldConstant.PUBLIC
-            : FieldConstant.PRIVATE
-        );
+                Boolean.TRUE.equals(request.getIsPublic())
+                        ? FieldConstant.PUBLIC
+                        : FieldConstant.PRIVATE);
         build.setStatus(FieldConstant.BUILD_STATUS_DRAFT);
         build.setTotalPrice(BigDecimal.ZERO);
         build.setTotalPower(BigDecimal.ZERO);
@@ -673,5 +808,68 @@ public class BuildServiceImpl implements BuildService {
         return build;
     }
 
+    /**
+     * 转换为装机单详情视图对象
+     * 
+     * @param detail          用户装机单详情实体
+     * @param hardware        硬件实体
+     * @param categoryNameMap 分类名称映射
+     * @return 装机单详情视图对象
+     */
+    private BuildDetailItemVO toDetailItemVO(
+            UserBuildDetail detail,
+            Hardware hardware,
+            Map<Integer, String> categoryNameMap) {
+        // 校验价格是否为空, 如果为空则默认0元
+        BigDecimal price = hardware.getPrice() == null ? BigDecimal.ZERO : hardware.getPrice();
+        // 校验数量是否为空, 如果为空则默认0
+        Integer quantity = detail.getQuantity() == null ? 0 : detail.getQuantity();
+
+        return BuildDetailItemVO.builder()
+                .detailId(String.valueOf(detail.getId()))
+                .hardwareId(String.valueOf(hardware.getId()))
+                .name(hardware.getName())
+                .brand(hardware.getBrand())
+                .categoryId(hardware.getCategoryId())
+                .categoryName(categoryNameMap.get(hardware.getCategoryId()))
+                .price(price)
+                .quantity(quantity)
+                .subTotal(price.multiply(BigDecimal.valueOf(quantity)))
+                .coverImage(hardware.getCoverImage())
+                .specs(parseSpecs(hardware.getSpecsJson()))
+                .build();
+    }
+
+    /**
+     * 转换为装机单详情视图对象
+     * 
+     * @param build 用户装机单实体
+     * @param items 装机单详情项视图对象列表
+     * @param liked 是否点赞
+     * @param favorited 是否收藏
+     * @return 装机单详情视图对象
+     */
+    private BuildDetailVO toDetailVO(
+            UserBuild build,
+            List<BuildDetailItemVO> items,
+            Boolean liked,
+            Boolean favorited) {
+        return BuildDetailVO.builder()
+                .id(String.valueOf(build.getId()))
+                .userId(String.valueOf(build.getUserId()))
+                .title(build.getTitle())
+                .description(build.getDescription())
+                .totalPrice(build.getTotalPrice())
+                .totalPower(build.getTotalPower())
+                .isPublic(FieldConstant.PUBLIC == build.getIsPublic())
+                .status(build.getStatus())
+                .coverImage(build.getCoverImage())
+                .liked(liked)
+                .favorited(favorited)
+                .items(items)
+                .createTime(build.getCreateTime())
+                .updateTime(build.getUpdateTime())
+                .build();
+    }
 
 }

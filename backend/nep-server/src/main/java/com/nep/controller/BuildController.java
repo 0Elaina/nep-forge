@@ -18,6 +18,7 @@ import com.nep.build.dto.BuildItemUpdateRequest;
 import com.nep.build.dto.BuildQueryRequest;
 import com.nep.build.dto.BuildUpdateRequest;
 import com.nep.build.service.BuildService;
+import com.nep.build.vo.BuildDetailVO;
 import com.nep.build.vo.BuildListVO;
 import com.nep.common.result.ApiResponse;
 import com.nep.common.result.PageResult;
@@ -159,5 +160,22 @@ public class BuildController {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         log.info("更新装机单配件数量接口: userId={}, buildId={}, detailId={}, request={}", currentUserId, id, detailId, request);
         return ApiResponse.success(buildService.updateBuildItemQuantity(currentUserId, id, detailId, request));
+    }
+
+    /**
+     * 查看装机单详情接口
+     * @param id 装机单ID
+     * @return 装机单详情
+     */
+    @Operation(summary = "查看装机单详情接口")
+    @GetMapping("/{id}")
+    public ApiResponse<BuildDetailVO> getBuildDetail(@PathVariable Long id) {
+        // 未登录时为 null，Service 层根据 null 跳过点赞/收藏等用户专属状态的查询
+        // 游客可访问公开装机单详情
+        // 登录用户可访问自己的私密装机单详情
+        // 非作者访问私密装机单被 Service 层拦截
+        Long currentUserId = SecurityUtils.getCurrentUserId() == null ? null : SecurityUtils.getCurrentUserId();
+        log.info("查看装机单详情接口: userId={}, buildId={}", currentUserId, id);
+        return ApiResponse.success(buildService.getBuildDetail(currentUserId, id));
     }
 }
