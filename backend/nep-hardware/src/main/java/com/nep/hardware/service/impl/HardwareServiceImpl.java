@@ -28,6 +28,7 @@ import com.nep.common.exception.CommonException;
 import com.nep.common.exception.HardwareErrorCode;
 import com.nep.common.result.PageResult;
 import com.nep.common.util.PageQueryUtils;
+import com.nep.common.util.StringCommonUtils;
 import com.nep.hardware.vo.HardwareCompareFieldVO;
 import com.nep.hardware.vo.HardwareCompareItemVO;
 import com.nep.hardware.vo.HardwareCompareVO;
@@ -415,21 +416,6 @@ public class HardwareServiceImpl implements HardwareService {
 
     }
 
-
-    /**
-     * 去除字符串首尾空格，若字符串为空则返回 null
-     * 使用情景：
-     * 1. 从请求参数中获取字符串值时，需要先去除首尾空格。
-     * 2. 从数据库中查询字符串值时，需要先判断是否为空，再进行处理。
-     * 
-     * @param value 输入字符串
-     * @return 处理后的字符串
-     */
-    private String trimToNull(String value){
-        if(!StringUtils.hasText(value)) return null;
-        return value.trim();
-    }
-
     /**
      * 将 Map 转换为 JSON 字符串
      * @param specs 输入 Map 对象
@@ -498,12 +484,12 @@ public class HardwareServiceImpl implements HardwareService {
     private void fillHardware(Hardware hardware, HardwareSaveRequest request) {
         hardware.setCategoryId(request.getCategoryId());
         hardware.setName(request.getName().trim());
-        hardware.setBrand(trimToNull(request.getBrand()));
+        hardware.setBrand(StringCommonUtils.trimToNull(request.getBrand()));
         hardware.setPrice(request.getPrice());
-        hardware.setSourceName(trimToNull(request.getSourceName()));
-        hardware.setSourceUrl(trimToNull(request.getSourceUrl()));
+        hardware.setSourceName(StringCommonUtils.trimToNull(request.getSourceName()));
+        hardware.setSourceUrl(StringCommonUtils.trimToNull(request.getSourceUrl()));
         hardware.setReleaseDate(request.getReleaseDate());
-        hardware.setCoverImage(trimToNull(request.getCoverImage()));
+        hardware.setCoverImage(StringCommonUtils.trimToNull(request.getCoverImage()));
         hardware.setSpecsJson(toSpecsJson(request.getSpecs()));
     }
 

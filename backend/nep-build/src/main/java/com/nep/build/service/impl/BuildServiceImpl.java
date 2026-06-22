@@ -1,8 +1,10 @@
 package com.nep.build.service.impl;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.nep.build.service.BuildService;
@@ -14,11 +16,13 @@ import com.nep.common.exception.CommonErrorCode;
 import com.nep.common.exception.CommonException;
 import com.nep.common.result.PageResult;
 import com.nep.common.util.PageQueryUtils;
+import com.nep.common.util.StringCommonUtils;
 
 import lombok.RequiredArgsConstructor;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.nep.build.dto.BuildCreateRequest;
 import com.nep.build.dto.BuildQueryRequest;
 import com.nep.build.entity.UserBuild;
 import com.nep.build.mapper.UserBuildMapper;
@@ -157,6 +161,39 @@ public class BuildServiceImpl implements BuildService {
         );
     }
 
+
+    /**
+     * 创建装机单
+     * @param currentUserId 当前用户ID
+     * @param request       创建请求
+     * @return 装机单ID
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Long createBuild(Long currentUserId, BuildCreateRequest request) {
+        if(currentUserId == null) {
+            throw new CommonException(CommonErrorCode.UNAUTHORIZED);
+        }
+
+        if(request == null) {
+            throw new CommonException(CommonErrorCode.REQUEST_PARAM_ERROR);
+        }
+
+        // 创建装机单实体
+        UserBuild userBuild = new UserBuild();
+        userBuild.setUserId(currentUserId);
+        createRequestFillBuild(request, userBuild);
+
+        // 插入装机单
+        int rows = userBuildMapper.insert(userBuild);
+        if(rows <= 0 || userBuild.getId() == null) {
+            throw new CommonException(CommonErrorCode.SYSTEM_ERROR, MessageConstant.BUILD_CREATE_FAILED);
+        }
+
+        return userBuild.getId();
+    }
+
+
     /**
      * 验证装机单状态
      * 
@@ -224,4 +261,28 @@ public class BuildServiceImpl implements BuildService {
                 .updateTime(userBuild.getUpdateTime())
                 .build();
     }
+
+
+    /**
+     * 根据创建请求填充装机单
+     * @param request 创建请求参数
+     * @param build   用户装机单实体
+     * @return 用户装机单实体
+     */
+    private UserBuild createRequestFillBuild(BuildCreateRequest request, UserBuild build) {
+        build.setTitle(request.getTitle().trim());
+        build.setDescription(StringCommonUtils.trimToNull(request.getDescription()));
+        build.setIsPublic(
+            Boolean.TRUE.equals(request.getIsPublic())
+            ? FieldConstant.PUBLIC
+            : FieldConstant.PRIVATE
+        );
+        build.setStatus(FieldConstant.BUILD_STATUS_DRAFT);
+        build.setTotalPrice(BigDecimal.ZERO);
+        build.setTotalPower(BigDecimal.ZERO);
+        build.setCoverImage(StringCommonUtils.trimToNull(request.getCoverImage()));
+        return build;
+    }
+
+
 }

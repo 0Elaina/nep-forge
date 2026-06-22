@@ -1,6 +1,7 @@
 package com.nep.build.service;
 
 import com.nep.common.result.PageResult;
+import com.nep.build.dto.BuildCreateRequest;
 import com.nep.build.dto.BuildQueryRequest;
 import com.nep.build.vo.BuildListVO;
 
@@ -23,4 +24,12 @@ public interface BuildService {
      * @return 分页结果
      */
     PageResult<BuildListVO> listMyBuilds(Long currentUserId, BuildQueryRequest request);
+
+    /**
+     * 创建装机单
+     * @param currentUserId 当前用户ID
+     * @param request 创建请求
+     * @return 装机单ID
+     */
+    Long createBuild(Long currentUserId, BuildCreateRequest request);
 }

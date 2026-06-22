@@ -55,6 +55,11 @@ public final class MessageConstant {
     public static final String BUILD_FORBIDDEN = "无权访问该装机单";
     public static final String BUILD_HARDWARE_EXISTS = "装机单中已存在该配件";
     public static final String BUILD_STATUS_INVALID = "装机单状态不合法";
+    public static final String BUILD_TITLE_NOT_BLANK = "装机单标题不能为空";
+    public static final String BUILD_TITLE_LENGTH_MAX_LIMIT = "装机单标题长度不能超过 100 个字符";
+    public static final String BUILD_DESCRIPTION_LENGTH_MAX_LIMIT = "装机单描述长度不能超过 255 个字符";
+    public static final String BUILD_COVER_IMAGE_LENGTH_MAX_LIMIT = "装机单封面图片长度不能超过 512 个字符";
+    public static final String BUILD_CREATE_FAILED = "创建装机单失败";
 
     /* ===================== 配件模块 ===================== */
 
