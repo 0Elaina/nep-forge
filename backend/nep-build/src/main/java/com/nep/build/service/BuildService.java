@@ -6,6 +6,7 @@ import com.nep.build.dto.BuildItemAddRequest;
 import com.nep.build.dto.BuildItemUpdateRequest;
 import com.nep.build.dto.BuildQueryRequest;
 import com.nep.build.dto.BuildUpdateRequest;
+import com.nep.build.vo.BuildDetailVO;
 import com.nep.build.vo.BuildListVO;
 
 /**
@@ -79,4 +80,12 @@ public interface BuildService {
         Long detailId,
         BuildItemUpdateRequest request
     );
+
+    /**
+     * 查询装机单详情
+     * @param currentUserId 当前用户ID
+     * @param buildId 装机单ID
+     * @return 装机单详情VO
+     */
+    BuildDetailVO getBuildDetail(Long currentUserId, Long buildId);
 }
