@@ -43,5 +43,6 @@ public final class ValidationConstant {
     public static final int BUILD_TITLE_MAX_LENGTH = 100;
     public static final int BUILD_DESCRIPTION_MAX_LENGTH = 255;
     public static final int BUILD_COVER_IMAGE_MAX_LENGTH = 512;
+    public static final int BUILD_HARDWARE_QUANTITY_MIN = 1;
 
 }

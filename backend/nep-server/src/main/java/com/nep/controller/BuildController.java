@@ -3,6 +3,7 @@ package com.nep.controller;
 import java.util.Map;
 
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nep.build.dto.BuildCreateRequest;
+import com.nep.build.dto.BuildItemAddRequest;
 import com.nep.build.dto.BuildQueryRequest;
 import com.nep.build.dto.BuildUpdateRequest;
 import com.nep.build.service.BuildService;
@@ -101,5 +103,41 @@ public class BuildController {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         log.info("更新装机单基础信息: userId={}, buildId={}", currentUserId, id);
         return ApiResponse.success(buildService.updateBuildBasicInfo(currentUserId, id, request));
+    }
+
+
+    /**
+     * 添加配件接口
+     * @param id 装机单ID
+     * @param request 添加请求参数
+     * @return 添加结果
+     */
+    @Operation(summary = "添加配件接口")
+    @PostMapping("/{id}/items")
+    public ApiResponse<Map<String, String>> addBuildItem(
+        @PathVariable Long id,
+        @Valid @RequestBody BuildItemAddRequest request
+    ) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        log.info("添加配件接口: userId={}, buildId={}, request={}", currentUserId, id, request);
+        Long detailId = buildService.addBuildItem(currentUserId, id, request);
+        return ApiResponse.success(Map.of("detailId", String.valueOf(detailId)));
+    }
+
+    /**
+     * 删除配件接口
+     * @param id 装机单ID
+     * @param detailId 配件详情ID
+     * @return 删除结果
+     */
+    @Operation(summary = "删除配件接口")
+    @DeleteMapping("/{id}/items/{detailId}")
+    public ApiResponse<Boolean> removeBuildItem(
+        @PathVariable Long id,
+        @PathVariable Long detailId
+    ) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        log.info("删除配件接口: userId={}, buildId={}, detailId={}", currentUserId, id, detailId);
+        return ApiResponse.success(buildService.removeBuildItem(currentUserId, id, detailId));
     }
 }
