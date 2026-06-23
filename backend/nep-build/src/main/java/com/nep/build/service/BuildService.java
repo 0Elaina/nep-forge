@@ -103,4 +103,12 @@ public interface BuildService {
         Long buildId,
         BuildVisibilityUpdateRequest request
     );
+
+    /**
+     * 发布装机单
+     * @param currentUserId 当前用户ID
+     * @param buildId 装机单ID
+     * @return 是否成功发布
+     */
+    Boolean publishBuild(Long currentUserId, Long buildId);
 }

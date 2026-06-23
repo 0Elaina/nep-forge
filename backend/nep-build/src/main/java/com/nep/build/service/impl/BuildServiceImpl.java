@@ -571,9 +571,55 @@ public class BuildServiceImpl implements BuildService {
         // 构建更新实体
         UserBuild updateBuild = new UserBuild();
         updateBuild.setId(userBuild.getId());
-        updateBuild.setIsDeleted(Boolean.TRUE.equals(request.getIsPublic())
+        updateBuild.setIsPublic(Boolean.TRUE.equals(request.getIsPublic())
                 ? FieldConstant.PUBLIC
                 : FieldConstant.PRIVATE);
+
+        int rows = userBuildMapper.updateById(updateBuild);
+        if(rows <= 0) {
+            throw new CommonException(
+                CommonErrorCode.SYSTEM_ERROR,
+                MessageConstant.BUILD_UPDATE_FAILED
+            );
+        }
+
+        return true;
+    }
+
+    /**
+     * 发布装机单
+     * 
+     * @param currentUserId 当前用户ID
+     * @param buildId       装机单ID
+     * @return 是否成功发布
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean publishBuild(Long currentUserId, Long buildId) {
+        if(currentUserId == null){
+            throw new CommonException(CommonErrorCode.UNAUTHORIZED);
+        }
+        if(buildId == null){
+            throw new CommonException(CommonErrorCode.REQUEST_PARAM_ERROR);
+        }
+
+        // 获取装机单实体, 并验证当前用户是否是装机单的创建者
+        UserBuild userBuild = getOwnedBuildOrThrow(currentUserId, buildId);
+
+        // 如果装机单为下架状态, 则不允许发布
+        if(FieldConstant.BUILD_STATUS_OFFLINE == userBuild.getStatus()) {
+            throw new CommonException(CommonErrorCode.REQUEST_PARAM_ERROR, MessageConstant.BUILD_FORBIDDEN);
+        }
+
+        // 如果装机单状态正常, 则直接返回true
+        if(FieldConstant.BUILD_STATUS_NORMAL == userBuild.getStatus()){
+            return true;
+        }
+
+        // 更新装机单状态为正常
+        UserBuild updateBuild = new UserBuild();
+        updateBuild.setId(userBuild.getId());
+        updateBuild.setStatus(FieldConstant.BUILD_STATUS_NORMAL);
 
         int rows = userBuildMapper.updateById(updateBuild);
         if(rows <= 0) {
