@@ -45,6 +45,7 @@ import com.nep.build.dto.BuildItemAddRequest;
 import com.nep.build.dto.BuildItemUpdateRequest;
 import com.nep.build.dto.BuildQueryRequest;
 import com.nep.build.dto.BuildUpdateRequest;
+import com.nep.build.dto.BuildVisibilityUpdateRequest;
 import com.nep.build.entity.UserBuild;
 import com.nep.build.entity.UserBuildDetail;
 import com.nep.build.mapper.UserBuildDetailMapper;
@@ -449,7 +450,7 @@ public class BuildServiceImpl implements BuildService {
         UserBuild build = userBuildMapper.selectById(buildId);
 
         // 如果装机单不存在, 抛出装机单不存在异常
-        if(build == null || FieldConstant.DELETED == build.getIsDeleted()) {
+        if (build == null || FieldConstant.DELETED == build.getIsDeleted()) {
             throw new CommonException(BuildErrorCode.BUILD_NOT_FOUND);
         }
 
@@ -460,23 +461,22 @@ public class BuildServiceImpl implements BuildService {
                 && FieldConstant.BUILD_STATUS_NORMAL == build.getStatus();
 
         // 如果当前用户不是装机单的创建者, 且装机单不是公开可见, 抛出装机单权限不足异常
-        if(!owner && !publicVisible) {
+        if (!owner && !publicVisible) {
             throw new CommonException(BuildErrorCode.BUILD_FORBIDDEN);
         }
 
         // 查询装机单详情
         List<UserBuildDetail> details = userBuildDetailMapper.selectList(
-            new LambdaQueryWrapper<UserBuildDetail>()
-                    .eq(UserBuildDetail::getBuildId, buildId)
-                    .orderByAsc(UserBuildDetail::getCreateTime)
-        );
+                new LambdaQueryWrapper<UserBuildDetail>()
+                        .eq(UserBuildDetail::getBuildId, buildId)
+                        .orderByAsc(UserBuildDetail::getCreateTime));
 
         // TODO: 检验当前用户是否点赞或收藏了装机单
         Boolean liked = false;
         Boolean favorited = false;
 
         // 如果装机单详情为空, 则返回空列表
-        if(details == null || details.isEmpty()) {
+        if (details == null || details.isEmpty()) {
             return toDetailVO(build, Collections.emptyList(), liked, favorited);
         }
 
@@ -488,10 +488,9 @@ public class BuildServiceImpl implements BuildService {
 
         // 查询所有硬件实体
         List<Hardware> hardwareList = hardwareMapper.selectList(
-                    new LambdaQueryWrapper<Hardware>()
-                            .in(Hardware::getId, hardwareIds)
-                            .eq(Hardware::getIsDeleted, FieldConstant.NOT_DELETED)  
-        );
+                new LambdaQueryWrapper<Hardware>()
+                        .in(Hardware::getId, hardwareIds)
+                        .eq(Hardware::getIsDeleted, FieldConstant.NOT_DELETED));
 
         // 构建硬件映射表
         Map<Long, Hardware> hardwareMap = hardwareList.stream()
@@ -507,24 +506,22 @@ public class BuildServiceImpl implements BuildService {
         Map<Integer, String> categoryNameMap = Collections.emptyMap();
 
         // 查询所有硬件分类实体
-        if(categoryIds != null && !categoryIds.isEmpty()) {
+        if (categoryIds != null && !categoryIds.isEmpty()) {
             List<HardwareCategory> categories = hardwareCategoryMapper.selectList(
-                new LambdaQueryWrapper<HardwareCategory>()
-                        .in(HardwareCategory::getId, categoryIds)
-                        .eq(HardwareCategory::getIsDeleted, FieldConstant.NOT_DELETED)
-            );
+                    new LambdaQueryWrapper<HardwareCategory>()
+                            .in(HardwareCategory::getId, categoryIds)
+                            .eq(HardwareCategory::getIsDeleted, FieldConstant.NOT_DELETED));
 
-        // 构建硬件分类映射表
-        // 如果有重复分类ID, 则取第一个分类名称
-        // 如果有重复分类名称, 则取第一个分类ID
-        categoryNameMap = categories.stream()
-                .collect(Collectors.toMap(
-                    HardwareCategory::getId,
-                    HardwareCategory::getName,
-                    (oldValue, newValue) -> oldValue
-                ));
+            // 构建硬件分类映射表
+            // 如果有重复分类ID, 则取第一个分类名称
+            // 如果有重复分类名称, 则取第一个分类ID
+            categoryNameMap = categories.stream()
+                    .collect(Collectors.toMap(
+                            HardwareCategory::getId,
+                            HardwareCategory::getName,
+                            (oldValue, newValue) -> oldValue));
         }
-        
+
         // 创建一个 effectively final 的引用，供 lambda 内部使用
         // （categoryNameMap 在后续代码中可能被重新赋值，lambda 要求捕获的变量必须不可变）
         Map<Integer, String> finalCategoryNameMap = categoryNameMap;
@@ -535,7 +532,8 @@ public class BuildServiceImpl implements BuildService {
                 .map(detail -> {
                     Hardware hardware = hardwareMap.get(detail.getHardwareId());
                     // 硬件已不存在（可能被删除了），跳过该记录
-                    if(hardware == null) return null;
+                    if (hardware == null)
+                        return null;
                     return toDetailItemVO(detail, hardware, finalCategoryNameMap);
                 })
                 // step 2: 过滤掉跳过的 null 记录
@@ -544,6 +542,48 @@ public class BuildServiceImpl implements BuildService {
                 .toList();
 
         return toDetailVO(build, items, liked, favorited);
+    }
+
+    /**
+     * 更新装机单可见性
+     * 
+     * @param currentUserId 当前用户ID
+     * @param buildId       装机单ID
+     * @param request       更新请求
+     * @return 是否成功更新
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateBuildVisibility(
+            Long currentUserId,
+            Long buildId,
+            BuildVisibilityUpdateRequest request) {
+        if (currentUserId == null) {
+            throw new CommonException(CommonErrorCode.UNAUTHORIZED);
+        }
+        if (buildId == null || request == null || request.getIsPublic() == null) {
+            throw new CommonException(CommonErrorCode.REQUEST_PARAM_ERROR);
+        }
+
+        // 获取装机单实体, 并验证当前用户是否是装机单的创建者
+        UserBuild userBuild = getOwnedBuildOrThrow(currentUserId, buildId);
+
+        // 构建更新实体
+        UserBuild updateBuild = new UserBuild();
+        updateBuild.setId(userBuild.getId());
+        updateBuild.setIsDeleted(Boolean.TRUE.equals(request.getIsPublic())
+                ? FieldConstant.PUBLIC
+                : FieldConstant.PRIVATE);
+
+        int rows = userBuildMapper.updateById(updateBuild);
+        if(rows <= 0) {
+            throw new CommonException(
+                CommonErrorCode.SYSTEM_ERROR,
+                MessageConstant.BUILD_UPDATE_FAILED
+            );
+        }
+
+        return true;
     }
 
     /**
@@ -843,9 +883,9 @@ public class BuildServiceImpl implements BuildService {
     /**
      * 转换为装机单详情视图对象
      * 
-     * @param build 用户装机单实体
-     * @param items 装机单详情项视图对象列表
-     * @param liked 是否点赞
+     * @param build     用户装机单实体
+     * @param items     装机单详情项视图对象列表
+     * @param liked     是否点赞
      * @param favorited 是否收藏
      * @return 装机单详情视图对象
      */

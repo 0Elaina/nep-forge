@@ -17,6 +17,7 @@ import com.nep.build.dto.BuildItemAddRequest;
 import com.nep.build.dto.BuildItemUpdateRequest;
 import com.nep.build.dto.BuildQueryRequest;
 import com.nep.build.dto.BuildUpdateRequest;
+import com.nep.build.dto.BuildVisibilityUpdateRequest;
 import com.nep.build.service.BuildService;
 import com.nep.build.vo.BuildDetailVO;
 import com.nep.build.vo.BuildListVO;
@@ -177,5 +178,22 @@ public class BuildController {
         Long currentUserId = SecurityUtils.getCurrentUserId() == null ? null : SecurityUtils.getCurrentUserId();
         log.info("查看装机单详情接口: userId={}, buildId={}", currentUserId, id);
         return ApiResponse.success(buildService.getBuildDetail(currentUserId, id));
+    }
+
+    /**
+     * 设置装机单公开/私密接口
+     * @param id 装机单ID
+     * @param request 更新请求参数
+     * @return 更新结果
+     */
+    @Operation(summary = "设置装机单公开/私密")
+    @PutMapping("/{id}/visibility")
+    public ApiResponse<Boolean> updateBuildVisibility(
+        @PathVariable Long id,
+        @Valid @RequestBody BuildVisibilityUpdateRequest request
+    ) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        log.info("设置装机单公开/私密: userId={}, buildId={}, isPublic={}", currentUserId, id, request.getIsPublic());
+        return ApiResponse.success(buildService.updateBuildVisibility(currentUserId, id, request));
     }
 }

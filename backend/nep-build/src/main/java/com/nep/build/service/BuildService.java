@@ -6,6 +6,7 @@ import com.nep.build.dto.BuildItemAddRequest;
 import com.nep.build.dto.BuildItemUpdateRequest;
 import com.nep.build.dto.BuildQueryRequest;
 import com.nep.build.dto.BuildUpdateRequest;
+import com.nep.build.dto.BuildVisibilityUpdateRequest;
 import com.nep.build.vo.BuildDetailVO;
 import com.nep.build.vo.BuildListVO;
 
@@ -88,4 +89,18 @@ public interface BuildService {
      * @return 装机单详情VO
      */
     BuildDetailVO getBuildDetail(Long currentUserId, Long buildId);
+
+
+    /**
+     * 更新装机单可见性
+     * @param currentUserId 当前用户ID
+     * @param buildId 装机单ID
+     * @param request 更新请求
+     * @return 是否成功更新
+     */
+    Boolean updateBuildVisibility(
+        Long currentUserId,
+        Long buildId,
+        BuildVisibilityUpdateRequest request
+    );
 }
