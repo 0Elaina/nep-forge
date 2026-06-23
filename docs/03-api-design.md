@@ -980,7 +980,66 @@ DELETE /api/v1/builds/{id}/items/{detailId}
 }
 ```
 
----
+
+
+### 9.10 发布装机单
+
+PUT /api/v1/builds/{id}/publish
+
+权限：装机单创建者。
+
+说明：
+
+- 将装机单 `status` 从 `0` 草稿更新为 `1` 正常。
+- 不修改 `isPublic`。
+- 已下架装机单不允许普通用户重新发布。
+
+响应：
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": true
+}
+```
+
+
+### 9.11 设置装机单公开/私密
+
+```http
+PUT /api/v1/builds/{id}/visibility
+```
+
+权限：装机单创建者。
+
+请求体：
+
+```
+{
+  "isPublic": true
+}
+```
+
+说明：
+
+- `true` 表示公开。
+- `false` 表示私密。
+- 该接口只修改 `is_public`，不修改 `status`。
+
+响应：
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": true
+}
+```
+
+
+
+
 
 ## 10. 点赞与收藏接口
 

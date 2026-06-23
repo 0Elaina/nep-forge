@@ -196,4 +196,17 @@ public class BuildController {
         log.info("设置装机单公开/私密: userId={}, buildId={}, isPublic={}", currentUserId, id, request.getIsPublic());
         return ApiResponse.success(buildService.updateBuildVisibility(currentUserId, id, request));
     }
+
+    /**
+     * 发布装机单接口
+     * @param id 装机单ID
+     * @return 发布结果
+     */
+    @Operation(summary = "发布装机单")
+    @PutMapping("/{id}/publish")
+    public ApiResponse<Boolean> publishBuild(@PathVariable Long id) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        log.info("发布装机单: userId={}, buildId={}", currentUserId, id);
+        return ApiResponse.success(buildService.publishBuild(currentUserId, id));
+    }
 }
