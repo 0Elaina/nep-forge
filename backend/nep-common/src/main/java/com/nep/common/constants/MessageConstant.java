@@ -67,6 +67,7 @@ public final class MessageConstant {
     public static final String BUILD_HARDWARE_ADD_FAILED = "添加装机单配件失败";
     public static final String BUILD_HARDWARE_REMOVE_FAILED = "删除装机单配件失败";
     public static final String BUILD_HARDWARE_NOT_FOUND = "装机单配件不存在";
+    public static final String BUILD_VISIBILITY_NOT_NULL = "装机单可见性不能为空";
 
     /* ===================== 配件模块 ===================== */
 
