@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nep.interaction.mapper.FavoriteMapper">
+
+    <!-- 构建FavoriteFolderVO的映射 -->
+    <resultMap id="FavoriteFolderVOMap" type="com.nep.interaction.vo.FavoriteFolderVO">
+        <result column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="description" property="description" />
+        <result column="is_public" property="isPublic" />
+        <result column="item_count" property="itemCount" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 查询用户收藏夹列表 -->
+    <select id="selectMyFavoriteFolders" resultMap="FavoriteFolderVOMap">
+        select 
+            cast(f.id as char) as id,
+            f.name as name,
+            f.description as description,
+            f.is_public as is_public,
+            count(ui.id) as item_count,
+            f.create_time as create_time,
+            f.update_time as update_time
+        from favorites f
+        left join user_interaction ui
+            on ui.folder_id = f.id
+            and ui.user_id = #{userId}
+            and ui.action_type = 2
+        where f.user_id = #{userId}
+        group by
+            f.id,
+            f.name,
+            f.description,
+            f.is_public,
+            f.create_time,
+            f.update_time
+        order by f.create_time desc
+    </select>
+
+</mapper>

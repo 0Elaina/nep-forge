@@ -1,6 +1,7 @@
 package com.nep.common.result;
 
 import java.util.List;
+
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * 分页结果实体
+ * 
  * @param <T> 分页数据类型
  */
 @Data
@@ -43,10 +45,11 @@ public class PageResult<T> implements Serializable {
 
     /**
      * 创建分页结果
-     * @param records 分页数据
-     * @param total 数据总条数
-     * @param pageNum 当前页码
-     * @param pageSize 每页条数
+     * 
+     * @param records2  分页数据
+     * @param total     数据总条数
+     * @param pageNum2  当前页码
+     * @param pageSize2 每页条数
      * @return 分页结果
      */
     public static <T> PageResult<T> of(List<T> records, Long total, Long pageNum, Long pageSize) {
@@ -59,19 +62,19 @@ public class PageResult<T> implements Serializable {
          * 算法：(total + pageSize - 1) / pageSize
          *
          * 这是经典的"向上取整"整数除法技巧，避免使用浮点数：
-         *   当 total % pageSize == 0 时，(total + pageSize - 1) / pageSize = total / pageSize
-         *   当 total % pageSize != 0 时，则多算一页容纳剩余不足一页的数据
+         * 当 total % pageSize == 0 时，(total + pageSize - 1) / pageSize = total /
+         * pageSize
+         * 当 total % pageSize != 0 时，则多算一页容纳剩余不足一页的数据
          */
         Long pages = safeTotal == 0 ? 0L : (safeTotal + safePageSize - 1) / safePageSize;
 
         return new PageResult<>(
-            records,
-            safeTotal,
-            pages,
-            safePageNum,
-            safePageSize,
-            pages > 0 && safePageNum < pages,
-            pages > 0 && safePageNum > 1
-        );
+                records,
+                safeTotal,
+                pages,
+                safePageNum,
+                safePageSize,
+                pages > 0 && safePageNum < pages,
+                pages > 0 && safePageNum > 1);
     }
 }
