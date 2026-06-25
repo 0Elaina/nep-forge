@@ -96,12 +96,15 @@ public final class MessageConstant {
     public static final String ARTICLE_NOT_FOUND = "文章不存在";
     public static final String ARTICLE_NOT_PUBLISHED = "文章未发布或已下架";
     public static final String TAG_NOT_FOUND = "标签不存在";
+    public static final String ARTICLE_STATUS_INVALID = "文章状态不合法";
 
     /* ===================== 交互模块（点赞/收藏） ===================== */
 
     public static final String FAVORITE_FOLDER_NOT_FOUND = "收藏夹不存在";
+    public static final String FAVORITE_FOLDER_ID_INVALID = "收藏夹ID无效";
     public static final String ALREADY_LIKED = "已点赞，请勿重复操作";
     public static final String ALREADY_FAVORITED = "已收藏，请勿重复操作";
+    public static final String TARGET_TYPE_INVALID = "目标类型不合法";
 
     /* ===================== 评论模块 ===================== */
 

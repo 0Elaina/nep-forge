@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nep.interaction.mapper.UserInteractionMapper">
+    <resultMap id="UserInteractionTargetVOMap" type="com.nep.interaction.vo.UserInteractionTargetVO">
+        <result column="interaction_id" property="interactionId"/>
+        <result column="target_id" property="targetId"/>
+        <result column="target_type" property="targetType"/>
+        <result column="action_type" property="actionType"/>
+        <result column="folder_id" property="folderId"/>
+        <result column="folder_name" property="folderName"/>
+        <result column="title" property="title"/>
+        <result column="brand" property="brand"/>
+        <result column="cover_image" property="coverImage"/>
+        <result column="target_status" property="targetStatus"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <sql id="BaseInteractionColumns">
+        cast(ui.id as char) as interaction_id,
+        cast(ui.target_id as char) as target_id,
+        ui.target_type as target_type,
+        ui.action_type as action_type,
+        cast(ui.folder_id as char) as folder_id,
+        f.name as folder_name
+    </sql>
+
+    <sql id="BaseInteractionFrom">
+        from user_interaction ui
+        left join favorites f
+            on ui.folder_id = f.id
+            and f.user_id = #{userId}
+    </sql>
+
+    <sql id="BaseInteractionWhere">
+        ui.user_id = #{userId}
+        and ui.action_type = #{actionType}
+        <if test="folderId != null">
+            and ui.folder_id = #{folderId}
+        </if>
+    </sql>
+
+    <!-- 混合互动分页查询用户互动记录 -->
+    <select id="selectMixedInteractionPage" resultMap="UserInteractionTargetVOMap">
+        select *
+        from (
+            select
+                <include refid="BaseInteractionColumns"/>,
+                a.title as title,
+                null as brand,
+                null as cover_image,
+                a.status as target_status,
+                ui.create_time as create_time
+            <include refid="BaseInteractionFrom"/>
+            inner join article a
+                on ui.target_id = a.id
+                and a.is_deleted = 0
+            where
+                <include refid="BaseInteractionWhere"/>
+                and ui.target_type = 1
+                and (a.status = 1 or a.user_id = #{userId})
+
+            union all
+
+            select
+                <include refid="BaseInteractionColumns"/>,
+                h.name as title,
+                h.brand as brand,
+                h.cover_image as cover_image,
+                null as target_status,
+                ui.create_time as create_time
+            <include refid="BaseInteractionFrom"/>
+            inner join hardware h
+                on ui.target_id = h.id
+                and h.is_deleted = 0
+            where
+                <include refid="BaseInteractionWhere"/>
+                and ui.target_type = 2
+
+            union all
+
+            select
+                <include refid="BaseInteractionColumns"/>,
+                b.title as title,
+                null as brand,
+                b.cover_image as cover_image,
+                b.status as target_status,
+                ui.create_time as create_time
+            <include refid="BaseInteractionFrom"/>
+            inner join user_builds b
+                on ui.target_id = b.id
+                and b.is_deleted = 0
+            where
+                <include refid="BaseInteractionWhere"/>
+                and ui.target_type = 3
+                and (b.is_public = 1 or b.user_id = #{userId})
+
+            union all
+
+            select
+                <include refid="BaseInteractionColumns"/>,
+                left(c.content, 80) as title,
+                null as brand,
+                null as cover_image,
+                null as target_status,
+                ui.create_time as create_time
+            <include refid="BaseInteractionFrom"/>
+            inner join `comment` c
+                on ui.target_id = c.id
+                and c.is_deleted = 0
+            where
+                <include refid="BaseInteractionWhere"/>
+                and ui.target_type = 4
+        ) t
+        order by t.create_time desc
+    </select>
+
+    <!-- 文章互动分页查询用户互动记录 -->
+    <select id="selectArticleInteractionPage" resultMap="UserInteractionTargetVOMap">
+        select
+            <include refid="BaseInteractionColumns"/>,
+            a.title as title,
+            null as brand,
+            null as cover_image,
+            a.status as target_status,
+            ui.create_time as create_time
+        <include refid="BaseInteractionFrom"/>
+        inner join article a
+            on ui.target_id = a.id
+            and a.is_deleted = 0
+        where
+            <include refid="BaseInteractionWhere"/>
+            and ui.target_type = 1
+            and (a.status = 1 or a.user_id = #{userId})
+        order by ui.create_time desc
+    </select>
+
+    <!-- 硬件互动分页查询用户互动记录 -->
+    <select id="selectHardwareInteractionPage" resultMap="UserInteractionTargetVOMap">
+        select
+            <include refid="BaseInteractionColumns"/>,
+            h.name as title,
+            h.brand as brand,
+            h.cover_image as cover_image,
+            null as target_status,
+            ui.create_time as create_time
+        <include refid="BaseInteractionFrom"/>
+        inner join hardware h
+            on ui.target_id = h.id
+            and h.is_deleted = 0
+        where
+            <include refid="BaseInteractionWhere"/>
+            and ui.target_type = 2
+        order by ui.create_time desc
+    </select>
+
+    <!-- 装机单互动分页查询用户互动记录 -->
+    <select id="selectBuildInteractionPage" resultMap="UserInteractionTargetVOMap">
+        select
+            <include refid="BaseInteractionColumns"/>,
+            b.title as title,
+            null as brand,
+            b.cover_image as cover_image,
+            b.status as target_status,
+            ui.create_time as create_time
+        <include refid="BaseInteractionFrom"/>
+        inner join user_builds b
+            on ui.target_id = b.id
+            and b.is_deleted = 0
+        where
+            <include refid="BaseInteractionWhere"/>
+            and ui.target_type = 3
+            and (b.is_public = 1 or b.user_id = #{userId})
+        order by ui.create_time desc
+    </select>
+
+    <!-- 评论互动分页查询用户互动记录 -->
+    <select id="selectCommentInteractionPage" resultMap="UserInteractionTargetVOMap">
+        select
+            <include refid="BaseInteractionColumns"/>,
+            left(c.content, 80) as title,
+            null as brand,
+            null as cover_image,
+            null as target_status,
+            ui.create_time as create_time
+        <include refid="BaseInteractionFrom"/>
+        inner join `comment` c
+            on ui.target_id = c.id
+            and c.is_deleted = 0
+        where
+            <include refid="BaseInteractionWhere"/>
+            and ui.target_type = 4
+        order by ui.create_time desc
+    </select>
+</mapper>
